@@ -1,0 +1,3 @@
+2019-08-15 18:08:14,081 - INFO - Beginning wf_vlbi_scheduler.py
+2019-08-15 18:08:14,085 - INFO - Overlap filtering. Reducing number of phase centres if there are FoV overlaps
+2019-08-15 18:08:14,112 - INFO - Overlap filtered. Nphs reduced from 5 to 3

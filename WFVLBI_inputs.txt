@@ -1,0 +1,46 @@
+## Input list to generate multiple phase center
+## VLBI observations designed to cover either an
+## area or set of coordinates
+
+###---------###
+### General ###
+###---------###
+## Smearing FoV - input smearing FoV (as radius from pointing centre, in arcmin)
+phs_centre_fov = 1/60.
+
+###-----------------------------###
+### Cover area in VLBI coverage ###
+###-----------------------------###
+area = True
+
+# Set coordinates for area ([[blcx,blcy,trcx,trcy],etc.]) in degrees
+area_coordinates = [[8,1,5,3],[3,4,5,6]]
+
+###------------------------------------------###
+### Targeted VLBI observations using catalog ###
+###------------------------------------------###
+targeted=True
+
+# Catalog name and type (will try to guess if type not set)
+catalog = 'testing/test_catalogue.csv'
+type = 'csv'
+RA_column = 'RA'
+Dec_column = 'Dec'
+
+# Filter overlaps where multiple phs centre covers same source
+filter_overlap=True
+
+# Filter flux density (above value)
+filter_flux = False
+filter_value = 0
+flux_column = ''
+
+###----------###
+### Plotting ###
+###----------###
+# Primary beam sizes to be plotted in metres
+PBs = []
+# Observing frequency in GHz
+observing_frequency = 1e9
+# Background fits image overlay
+fitsimage=''
