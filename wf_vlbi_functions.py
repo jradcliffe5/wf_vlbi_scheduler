@@ -5,7 +5,7 @@ import logging
 import astropy.units as u
 import numpy as np
 from astropy.table import Table
-
+from astropy import wcs
 def setup_logging_to_file(filename):
     logging.basicConfig( filename='./'+filename,
                          filemode='w',
@@ -234,6 +234,39 @@ def build_filtered_table(table, filter, filter_indices, RA_col, Dec_col):
             DEC.append(np.average(df[filter_indices[0][i]]['DEC']))
         return Table([RA,DEC], names=('RA','DEC'))
 
+def generate_central_wcs(crval, cdelt, crpix):
+    # Create a new WCS object.  The number of axes must be set
+    # from the start
+    w = wcs.WCS(naxis=2)
+
+    # Set up an "Airy's zenithal" projection
+    # Vector properties may be set with Python lists, or Numpy arrays
+    #CTYPE1  = projection
+    #CRVAL1  = central position in degrees
+    #CDELT1  = pixel demarcation
+    #CRPIX1  = reference pixel
+    #CUNIT1  = values of angle objects
+    w.wcs.crpix = np.array(crpix).astype(int)
+    w.wcs.cdelt = np.array(cdelt).astype(float)
+    w.wcs.crval = np.array(crval).astype(float)
+    w.wcs.ctype = ["RA---SIN", "DEC--SIN"]
+
+    # Some pixel coordinates of interest.
+    pixcrd = np.array([[-10, -10], [24, 38], [45, 98]], np.float_)
+
+    # Convert pixel coordinates to world coordinates
+    world = w.wcs_pix2world(pixcrd, 1)
+    print(world)
+
+    # Convert the same coordinates back to pixel coordinates.
+    pixcrd2 = w.wcs_world2pix(world, 1)
+    print(pixcrd2)
+
+    # These should be the same as the original pixel coordinates, modulo
+    # some floating-point error.
+    assert np.max(np.abs(pixcrd - pixcrd2)) < 1e-6
+
+    return w
 
 def the_condition(xs,ys,condition):
     return xs.separation(ys).to(u.arcmin).value > condition ## arcmin separation to remove

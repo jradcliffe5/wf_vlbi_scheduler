@@ -1,3 +1,190 @@
-2019-08-15 18:08:14,081 - INFO - Beginning wf_vlbi_scheduler.py
-2019-08-15 18:08:14,085 - INFO - Overlap filtering. Reducing number of phase centres if there are FoV overlaps
-2019-08-15 18:08:14,112 - INFO - Overlap filtered. Nphs reduced from 5 to 3
+2019-08-15 19:35:53,493 - INFO - Beginning wf_vlbi_scheduler.py
+2019-08-15 19:35:53,503 - INFO - Overlap filtering. Reducing number of phase centres if there are FoV overlaps
+2019-08-15 19:35:53,553 - INFO - Overlap filtered. Nphs reduced from 3 to 3
+2019-08-15 19:35:53,855 - INFO - font.family must be one of (serif, sans-serif, cursive, monospace) when text.usetex is True. serif will be used by default.
+2019-08-15 19:35:53,855 - DEBUG - serif font is not compatible with usetex.
+2019-08-15 19:35:53,855 - DEBUG - serif font is not compatible with usetex.
+2019-08-15 19:35:53,855 - DEBUG - family: serif, font: Computer Modern Roman, info: ('cmr', '')
+2019-08-15 19:35:53,856 - DEBUG - sans-serif font is not compatible with usetex.
+2019-08-15 19:35:53,856 - DEBUG - sans-serif font is not compatible with usetex.
+2019-08-15 19:35:53,856 - DEBUG - family: sans-serif, font: Computer Modern Sans Serif, info: ('cmss', '')
+2019-08-15 19:35:53,856 - DEBUG - cursive font is not compatible with usetex.
+2019-08-15 19:35:53,856 - DEBUG - cursive font is not compatible with usetex.
+2019-08-15 19:35:53,856 - DEBUG - family: cursive, font: Zapf Chancery, info: ('pzc', '\\usepackage{chancery}')
+2019-08-15 19:35:53,856 - DEBUG - monospace font is not compatible with usetex.
+2019-08-15 19:35:53,856 - DEBUG - monospace font is not compatible with usetex.
+2019-08-15 19:35:53,856 - DEBUG - family: monospace, font: Computer Modern Typewriter, info: ('cmtt', '')
+2019-08-15 19:35:53,857 - DEBUG - following keys changed: ['text.latex.preamble', 'text.latex.unicode', 'text.latex.preview', 'font.family', 'font.serif', 'font.sans-serif', 'font.cursive', 'font.monospace']
+2019-08-15 19:35:53,857 - DEBUG - text.latex.preamble : None       ->           
+2019-08-15 19:35:53,857 - DEBUG - text.latex.unicode  : None       -> True      
+2019-08-15 19:35:53,857 - DEBUG - text.latex.preview  : None       -> False     
+2019-08-15 19:35:53,857 - DEBUG - font.family         : None       -> ['DejaVu Sans']
+2019-08-15 19:35:53,857 - DEBUG - font.serif          : None       -> ['DejaVu Serif', 'Bitstream Vera Serif', 'Computer Modern Roman', 'New Century Schoolbook', 'Century Schoolbook L', 'Utopia', 'ITC Bookman', 'Bookman', 'Nimbus Roman No9 L', 'Times New Roman', 'Times', 'Palatino', 'Charter', 'serif']
+2019-08-15 19:35:53,858 - DEBUG - font.sans-serif     : None       -> ['DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', 'sans-serif']
+2019-08-15 19:35:53,858 - DEBUG - font.cursive        : None       -> ['Apple Chancery', 'Textile', 'Zapf Chancery', 'Sand', 'Script MT', 'Felipa', 'cursive']
+2019-08-15 19:35:53,858 - DEBUG - font.monospace      : None       -> ['DejaVu Sans Mono', 'Bitstream Vera Sans Mono', 'Computer Modern Typewriter', 'Andale Mono', 'Nimbus Mono L', 'Courier New', 'Courier', 'Fixed', 'Terminal', 'monospace']
+2019-08-15 19:35:53,858 - DEBUG - RE-INIT
+old fontconfig: serifcmrcmsspzccmttd41d8cd98f00b204e9800998ecf8427e
+2019-08-15 19:35:53,859 - INFO - font.family must be one of (serif, sans-serif, cursive, monospace) when text.usetex is True. serif will be used by default.
+2019-08-15 19:35:53,860 - DEBUG - serif font is not compatible with usetex.
+2019-08-15 19:35:53,860 - DEBUG - serif font is not compatible with usetex.
+2019-08-15 19:35:53,860 - DEBUG - family: serif, font: Computer Modern Roman, info: ('cmr', '')
+2019-08-15 19:35:53,860 - DEBUG - sans-serif font is not compatible with usetex.
+2019-08-15 19:35:53,860 - DEBUG - sans-serif font is not compatible with usetex.
+2019-08-15 19:35:53,860 - DEBUG - family: sans-serif, font: Computer Modern Sans Serif, info: ('cmss', '')
+2019-08-15 19:35:53,861 - DEBUG - cursive font is not compatible with usetex.
+2019-08-15 19:35:53,861 - DEBUG - cursive font is not compatible with usetex.
+2019-08-15 19:35:53,861 - DEBUG - family: cursive, font: Zapf Chancery, info: ('pzc', '\\usepackage{chancery}')
+2019-08-15 19:35:53,861 - DEBUG - monospace font is not compatible with usetex.
+2019-08-15 19:35:53,861 - DEBUG - monospace font is not compatible with usetex.
+2019-08-15 19:35:53,861 - DEBUG - family: monospace, font: Computer Modern Typewriter, info: ('cmtt', '')
+2019-08-15 19:35:53,861 - DEBUG - fontconfig: serifcmrcmsspzccmttd41d8cd98f00b204e9800998ecf8427e
+2019-08-15 19:35:53,861 - DEBUG - Dvi: /Users/jackradcliffe/.matplotlib/tex.cache/265fdf92b077575fff48f2c6d04b2931.dvi
+2019-08-15 19:35:53,861 - DEBUG - Dvi._xxx: encountered special: papersize=5203.43999pt,5203.43999pt
+2019-08-15 19:35:53,862 - DEBUG - ['kpsewhich', 'cmr12.tfm']
+2019-08-15 19:35:54,043 - DEBUG - stdout:
+b'/usr/local/texlive/2018/texmf-dist/fonts/tfm/public/cm/cmr12.tfm\n'
+2019-08-15 19:35:54,044 - DEBUG - stderr:
+b''
+2019-08-15 19:35:54,045 - DEBUG - opening tfm file /usr/local/texlive/2018/texmf-dist/fonts/tfm/public/cm/cmr12.tfm
+2019-08-15 19:35:54,046 - DEBUG - lh=18, bc=0, ec=127, nw=34, nh=16, nd=10
+2019-08-15 19:35:54,046 - DEBUG - ['kpsewhich', 'cmr12.vf']
+2019-08-15 19:35:54,250 - DEBUG - fontconfig: serifcmrcmsspzccmttd41d8cd98f00b204e9800998ecf8427e
+2019-08-15 19:35:54,251 - DEBUG - Dvi: /Users/jackradcliffe/.matplotlib/tex.cache/49681aab9edffd18f387b75e63e36a3a.dvi
+2019-08-15 19:35:54,251 - DEBUG - Dvi._xxx: encountered special: papersize=5203.43999pt,5203.43999pt
+2019-08-15 19:35:54,252 - DEBUG - ['kpsewhich', 'cmr10.tfm']
+2019-08-15 19:35:54,444 - DEBUG - stdout:
+b'/usr/local/texlive/2018/texmf-dist/fonts/tfm/public/cm/cmr10.tfm\n'
+2019-08-15 19:35:54,445 - DEBUG - stderr:
+b''
+2019-08-15 19:35:54,445 - DEBUG - opening tfm file /usr/local/texlive/2018/texmf-dist/fonts/tfm/public/cm/cmr10.tfm
+2019-08-15 19:35:54,446 - DEBUG - lh=18, bc=0, ec=127, nw=36, nh=16, nd=10
+2019-08-15 19:35:54,447 - DEBUG - ['kpsewhich', 'cmr10.vf']
+2019-08-15 19:35:54,629 - DEBUG - ['kpsewhich', 'cmmi12.tfm']
+2019-08-15 19:35:54,789 - DEBUG - stdout:
+b'/usr/local/texlive/2018/texmf-dist/fonts/tfm/public/cm/cmmi12.tfm\n'
+2019-08-15 19:35:54,789 - DEBUG - stderr:
+b''
+2019-08-15 19:35:54,790 - DEBUG - opening tfm file /usr/local/texlive/2018/texmf-dist/fonts/tfm/public/cm/cmmi12.tfm
+2019-08-15 19:35:54,791 - DEBUG - lh=18, bc=0, ec=127, nw=97, nh=15, nd=9
+2019-08-15 19:35:54,791 - DEBUG - ['kpsewhich', 'cmmi12.vf']
+2019-08-15 19:35:54,962 - DEBUG - fontconfig: serifcmrcmsspzccmttd41d8cd98f00b204e9800998ecf8427e
+2019-08-15 19:35:54,963 - DEBUG - Dvi: /Users/jackradcliffe/.matplotlib/tex.cache/49681aab9edffd18f387b75e63e36a3a.dvi
+2019-08-15 19:35:54,963 - DEBUG - Dvi._xxx: encountered special: papersize=5203.43999pt,5203.43999pt
+2019-08-15 19:35:54,964 - DEBUG - ['kpsewhich', 'pdftex.map']
+2019-08-15 19:35:55,123 - DEBUG - stdout:
+b'/usr/local/texlive/2018/texmf-var/fonts/map/pdftex/updmap/pdftex.map\n'
+2019-08-15 19:35:55,123 - DEBUG - stderr:
+b''
+2019-08-15 19:35:55,494 - DEBUG - ['kpsewhich', 'cmr12.pfb']
+2019-08-15 19:35:55,695 - DEBUG - stdout:
+b'/usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb\n'
+2019-08-15 19:35:55,696 - DEBUG - stderr:
+b''
+2019-08-15 19:35:55,696 - DEBUG - Assigning font /b'F1' = b'cmr12' (dvi)
+2019-08-15 19:35:55,696 - DEBUG - ['kpsewhich', 'cmr10.pfb']
+2019-08-15 19:35:55,860 - DEBUG - stdout:
+b'/usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb\n'
+2019-08-15 19:35:55,861 - DEBUG - stderr:
+b''
+2019-08-15 19:35:55,861 - DEBUG - Assigning font /b'F2' = b'cmr10' (dvi)
+2019-08-15 19:35:55,861 - DEBUG - ['kpsewhich', 'cmmi12.pfb']
+2019-08-15 19:35:56,019 - DEBUG - stdout:
+b'/usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb\n'
+2019-08-15 19:35:56,020 - DEBUG - stderr:
+b''
+2019-08-15 19:35:56,021 - DEBUG - Assigning font /b'F3' = b'cmmi12' (dvi)
+2019-08-15 19:35:56,023 - DEBUG - fontconfig: serifcmrcmsspzccmttd41d8cd98f00b204e9800998ecf8427e
+2019-08-15 19:35:56,023 - DEBUG - Dvi: /Users/jackradcliffe/.matplotlib/tex.cache/265fdf92b077575fff48f2c6d04b2931.dvi
+2019-08-15 19:35:56,024 - DEBUG - Dvi._xxx: encountered special: papersize=5203.43999pt,5203.43999pt
+2019-08-15 19:35:56,024 - DEBUG - fontconfig: serifcmrcmsspzccmttd41d8cd98f00b204e9800998ecf8427e
+2019-08-15 19:35:56,024 - DEBUG - Dvi: /Users/jackradcliffe/.matplotlib/tex.cache/dd7a2cbb0ae8aad8b17083c4eb1c6b6b.dvi
+2019-08-15 19:35:56,024 - DEBUG - Dvi._xxx: encountered special: papersize=5203.43999pt,5203.43999pt
+2019-08-15 19:35:56,025 - DEBUG - fontconfig: serifcmrcmsspzccmttd41d8cd98f00b204e9800998ecf8427e
+2019-08-15 19:35:56,026 - DEBUG - Dvi: /Users/jackradcliffe/.matplotlib/tex.cache/dd7a2cbb0ae8aad8b17083c4eb1c6b6b.dvi
+2019-08-15 19:35:56,026 - DEBUG - Dvi._xxx: encountered special: papersize=5203.43999pt,5203.43999pt
+2019-08-15 19:35:56,027 - DEBUG - fontconfig: serifcmrcmsspzccmttd41d8cd98f00b204e9800998ecf8427e
+2019-08-15 19:35:56,027 - DEBUG - Dvi: /Users/jackradcliffe/.matplotlib/tex.cache/265fdf92b077575fff48f2c6d04b2931.dvi
+2019-08-15 19:35:56,027 - DEBUG - Dvi._xxx: encountered special: papersize=5203.43999pt,5203.43999pt
+2019-08-15 19:35:56,027 - DEBUG - fontconfig: serifcmrcmsspzccmttd41d8cd98f00b204e9800998ecf8427e
+2019-08-15 19:35:56,028 - DEBUG - Dvi: /Users/jackradcliffe/.matplotlib/tex.cache/b15ce43d196edb694ac9de785a118b66.dvi
+2019-08-15 19:35:56,028 - DEBUG - Dvi._xxx: encountered special: papersize=5203.43999pt,5203.43999pt
+2019-08-15 19:35:56,028 - DEBUG - fontconfig: serifcmrcmsspzccmttd41d8cd98f00b204e9800998ecf8427e
+2019-08-15 19:35:56,029 - DEBUG - Dvi: /Users/jackradcliffe/.matplotlib/tex.cache/b15ce43d196edb694ac9de785a118b66.dvi
+2019-08-15 19:35:56,029 - DEBUG - Dvi._xxx: encountered special: papersize=5203.43999pt,5203.43999pt
+2019-08-15 19:35:56,033 - DEBUG - fontconfig: serifcmrcmsspzccmttd41d8cd98f00b204e9800998ecf8427e
+2019-08-15 19:35:56,033 - DEBUG - Dvi: /Users/jackradcliffe/.matplotlib/tex.cache/265fdf92b077575fff48f2c6d04b2931.dvi
+2019-08-15 19:35:56,033 - DEBUG - Dvi._xxx: encountered special: papersize=5203.43999pt,5203.43999pt
+2019-08-15 19:35:56,034 - DEBUG - fontconfig: serifcmrcmsspzccmttd41d8cd98f00b204e9800998ecf8427e
+2019-08-15 19:35:56,034 - DEBUG - Dvi: /Users/jackradcliffe/.matplotlib/tex.cache/c999d77b6c9cf1fc81b3964658d71927.dvi
+2019-08-15 19:35:56,034 - DEBUG - Dvi._xxx: encountered special: papersize=5203.43999pt,5203.43999pt
+2019-08-15 19:35:56,034 - DEBUG - ['kpsewhich', 'cmsy10.tfm']
+2019-08-15 19:35:56,194 - DEBUG - stdout:
+b'/usr/local/texlive/2018/texmf-dist/fonts/tfm/public/cm/cmsy10.tfm\n'
+2019-08-15 19:35:56,195 - DEBUG - stderr:
+b''
+2019-08-15 19:35:56,195 - DEBUG - opening tfm file /usr/local/texlive/2018/texmf-dist/fonts/tfm/public/cm/cmsy10.tfm
+2019-08-15 19:35:56,196 - DEBUG - lh=18, bc=0, ec=127, nw=44, nh=15, nd=16
+2019-08-15 19:35:56,197 - DEBUG - ['kpsewhich', 'cmsy10.vf']
+2019-08-15 19:35:56,361 - DEBUG - fontconfig: serifcmrcmsspzccmttd41d8cd98f00b204e9800998ecf8427e
+2019-08-15 19:35:56,361 - DEBUG - Dvi: /Users/jackradcliffe/.matplotlib/tex.cache/c999d77b6c9cf1fc81b3964658d71927.dvi
+2019-08-15 19:35:56,361 - DEBUG - Dvi._xxx: encountered special: papersize=5203.43999pt,5203.43999pt
+2019-08-15 19:35:56,362 - DEBUG - ['kpsewhich', 'cmsy10.pfb']
+2019-08-15 19:35:56,523 - DEBUG - stdout:
+b'/usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb\n'
+2019-08-15 19:35:56,523 - DEBUG - stderr:
+b''
+2019-08-15 19:35:56,524 - DEBUG - Assigning font /b'F4' = b'cmsy10' (dvi)
+2019-08-15 19:35:56,526 - DEBUG - fontconfig: serifcmrcmsspzccmttd41d8cd98f00b204e9800998ecf8427e
+2019-08-15 19:35:56,526 - DEBUG - Dvi: /Users/jackradcliffe/.matplotlib/tex.cache/265fdf92b077575fff48f2c6d04b2931.dvi
+2019-08-15 19:35:56,526 - DEBUG - Dvi._xxx: encountered special: papersize=5203.43999pt,5203.43999pt
+2019-08-15 19:35:56,527 - DEBUG - fontconfig: serifcmrcmsspzccmttd41d8cd98f00b204e9800998ecf8427e
+2019-08-15 19:35:56,527 - DEBUG - Dvi: /Users/jackradcliffe/.matplotlib/tex.cache/59515ba61009d66adcc073df6dc08563.dvi
+2019-08-15 19:35:56,527 - DEBUG - Dvi._xxx: encountered special: papersize=5203.43999pt,5203.43999pt
+2019-08-15 19:35:56,528 - DEBUG - fontconfig: serifcmrcmsspzccmttd41d8cd98f00b204e9800998ecf8427e
+2019-08-15 19:35:56,528 - DEBUG - Dvi: /Users/jackradcliffe/.matplotlib/tex.cache/59515ba61009d66adcc073df6dc08563.dvi
+2019-08-15 19:35:56,528 - DEBUG - Dvi._xxx: encountered special: papersize=5203.43999pt,5203.43999pt
+2019-08-15 19:35:56,530 - DEBUG - fontconfig: serifcmrcmsspzccmttd41d8cd98f00b204e9800998ecf8427e
+2019-08-15 19:35:56,530 - DEBUG - Dvi: /Users/jackradcliffe/.matplotlib/tex.cache/265fdf92b077575fff48f2c6d04b2931.dvi
+2019-08-15 19:35:56,531 - DEBUG - Dvi._xxx: encountered special: papersize=5203.43999pt,5203.43999pt
+2019-08-15 19:35:56,531 - DEBUG - fontconfig: serifcmrcmsspzccmttd41d8cd98f00b204e9800998ecf8427e
+2019-08-15 19:35:56,531 - DEBUG - Dvi: /Users/jackradcliffe/.matplotlib/tex.cache/fc7d430ca8bfdb169e89cbca42d1d2d0.dvi
+2019-08-15 19:35:56,531 - DEBUG - Dvi._xxx: encountered special: papersize=5203.43999pt,5203.43999pt
+2019-08-15 19:35:56,532 - DEBUG - fontconfig: serifcmrcmsspzccmttd41d8cd98f00b204e9800998ecf8427e
+2019-08-15 19:35:56,532 - DEBUG - Dvi: /Users/jackradcliffe/.matplotlib/tex.cache/fc7d430ca8bfdb169e89cbca42d1d2d0.dvi
+2019-08-15 19:35:56,532 - DEBUG - Dvi._xxx: encountered special: papersize=5203.43999pt,5203.43999pt
+2019-08-15 19:35:56,533 - DEBUG - fontconfig: serifcmrcmsspzccmttd41d8cd98f00b204e9800998ecf8427e
+2019-08-15 19:35:56,534 - DEBUG - Dvi: /Users/jackradcliffe/.matplotlib/tex.cache/265fdf92b077575fff48f2c6d04b2931.dvi
+2019-08-15 19:35:56,534 - DEBUG - Dvi._xxx: encountered special: papersize=5203.43999pt,5203.43999pt
+2019-08-15 19:35:56,534 - DEBUG - fontconfig: serifcmrcmsspzccmttd41d8cd98f00b204e9800998ecf8427e
+2019-08-15 19:35:56,534 - DEBUG - Dvi: /Users/jackradcliffe/.matplotlib/tex.cache/274f19a473463a6d94559cab9b5b6bce.dvi
+2019-08-15 19:35:56,535 - DEBUG - Dvi._xxx: encountered special: papersize=5203.43999pt,5203.43999pt
+2019-08-15 19:35:56,535 - DEBUG - fontconfig: serifcmrcmsspzccmttd41d8cd98f00b204e9800998ecf8427e
+2019-08-15 19:35:56,536 - DEBUG - Dvi: /Users/jackradcliffe/.matplotlib/tex.cache/274f19a473463a6d94559cab9b5b6bce.dvi
+2019-08-15 19:35:56,536 - DEBUG - Dvi._xxx: encountered special: papersize=5203.43999pt,5203.43999pt
+2019-08-15 19:35:56,537 - DEBUG - fontconfig: serifcmrcmsspzccmttd41d8cd98f00b204e9800998ecf8427e
+2019-08-15 19:35:56,537 - DEBUG - Dvi: /Users/jackradcliffe/.matplotlib/tex.cache/265fdf92b077575fff48f2c6d04b2931.dvi
+2019-08-15 19:35:56,537 - DEBUG - Dvi._xxx: encountered special: papersize=5203.43999pt,5203.43999pt
+2019-08-15 19:35:56,538 - DEBUG - fontconfig: serifcmrcmsspzccmttd41d8cd98f00b204e9800998ecf8427e
+2019-08-15 19:35:56,538 - DEBUG - Dvi: /Users/jackradcliffe/.matplotlib/tex.cache/e172fb727d29428ded0bd97c1348f733.dvi
+2019-08-15 19:35:56,538 - DEBUG - Dvi._xxx: encountered special: papersize=5203.43999pt,5203.43999pt
+2019-08-15 19:35:56,539 - DEBUG - fontconfig: serifcmrcmsspzccmttd41d8cd98f00b204e9800998ecf8427e
+2019-08-15 19:35:56,539 - DEBUG - Dvi: /Users/jackradcliffe/.matplotlib/tex.cache/e172fb727d29428ded0bd97c1348f733.dvi
+2019-08-15 19:35:56,539 - DEBUG - Dvi._xxx: encountered special: papersize=5203.43999pt,5203.43999pt
+2019-08-15 19:35:56,541 - DEBUG - fontconfig: serifcmrcmsspzccmttd41d8cd98f00b204e9800998ecf8427e
+2019-08-15 19:35:56,541 - DEBUG - Dvi: /Users/jackradcliffe/.matplotlib/tex.cache/265fdf92b077575fff48f2c6d04b2931.dvi
+2019-08-15 19:35:56,541 - DEBUG - Dvi._xxx: encountered special: papersize=5203.43999pt,5203.43999pt
+2019-08-15 19:35:56,542 - DEBUG - fontconfig: serifcmrcmsspzccmttd41d8cd98f00b204e9800998ecf8427e
+2019-08-15 19:35:56,542 - DEBUG - Dvi: /Users/jackradcliffe/.matplotlib/tex.cache/fcf2d5d28c838615a0a98075c8a0a252.dvi
+2019-08-15 19:35:56,542 - DEBUG - Dvi._xxx: encountered special: papersize=5203.43999pt,5203.43999pt
+2019-08-15 19:35:56,543 - DEBUG - fontconfig: serifcmrcmsspzccmttd41d8cd98f00b204e9800998ecf8427e
+2019-08-15 19:35:56,543 - DEBUG - Dvi: /Users/jackradcliffe/.matplotlib/tex.cache/fcf2d5d28c838615a0a98075c8a0a252.dvi
+2019-08-15 19:35:56,543 - DEBUG - Dvi._xxx: encountered special: papersize=5203.43999pt,5203.43999pt
+2019-08-15 19:35:56,548 - DEBUG - Embedding Type-1 font b'cmmi12' from dvi.
+2019-08-15 19:35:56,548 - DEBUG - Embedding TeX font b'cmmi12' - fontinfo={'dvifont': <DviFont: b'cmmi12'>, 'pdfname': <Name b'F3'>, 'fontfile': '/usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb', 'basefont': b'CMMI12', 'encodingfile': None, 'effects': {}}
+2019-08-15 19:35:56,570 - DEBUG - Embedding Type-1 font b'cmr10' from dvi.
+2019-08-15 19:35:56,570 - DEBUG - Embedding TeX font b'cmr10' - fontinfo={'dvifont': <DviFont: b'cmr10'>, 'pdfname': <Name b'F2'>, 'fontfile': '/usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb', 'basefont': b'CMR10', 'encodingfile': None, 'effects': {}}
+2019-08-15 19:35:56,590 - DEBUG - Embedding Type-1 font b'cmr12' from dvi.
+2019-08-15 19:35:56,590 - DEBUG - Embedding TeX font b'cmr12' - fontinfo={'dvifont': <DviFont: b'cmr12'>, 'pdfname': <Name b'F1'>, 'fontfile': '/usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb', 'basefont': b'CMR12', 'encodingfile': None, 'effects': {}}
+2019-08-15 19:35:56,604 - DEBUG - Embedding Type-1 font b'cmsy10' from dvi.
+2019-08-15 19:35:56,604 - DEBUG - Embedding TeX font b'cmsy10' - fontinfo={'dvifont': <DviFont: b'cmsy10'>, 'pdfname': <Name b'F4'>, 'fontfile': '/usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb', 'basefont': b'CMSY10', 'encodingfile': None, 'effects': {}}
