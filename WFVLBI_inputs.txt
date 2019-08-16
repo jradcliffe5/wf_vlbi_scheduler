@@ -6,7 +6,7 @@
 ### General ###
 ###---------###
 ## Smearing FoV - input smearing FoV (as radius from pointing centre, in arcmin)
-phs_centre_fov = 0.3/60.
+phs_centre_fov = 1.
 
 ###-----------------------------###
 ### Cover area in VLBI coverage ###
@@ -22,10 +22,10 @@ area_coordinates = [[8,1,5,3],[3,4,5,6]]
 targeted=True
 
 # Catalog name and type (will try to guess if type not set)
-catalog = 'testing/test_catalogue.csv'
+catalog = 'testing/random_catalogue.csv'
 type = 'csv'
 RA_column = 'RA'
-Dec_column = 'Dec'
+Dec_column = 'DEC'
 
 # Filter overlaps where multiple phs centre covers same source
 filter_overlap=True

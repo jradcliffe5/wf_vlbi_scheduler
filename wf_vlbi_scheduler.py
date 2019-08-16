@@ -60,20 +60,20 @@ if do_targeted == 'True':
 if do_plots == 'True':
     centre_coords = [np.average(df['RA']),np.average(df['DEC'])]
     pixels = 5000.
-    large_range = np.max([np.max(master_table[RA_column])-np.min(master_table[RA_column]),np.max(master_table[Dec_column])-np.min(master_table[Dec_column])])*1.5
+    large_range = np.max([np.max(master_table[RA_column])-np.min(master_table[RA_column]),np.max(master_table[Dec_column])-np.min(master_table[Dec_column])])*0.5
     w = generate_central_wcs(centre_coords,[large_range/pixels,large_range/pixels],[0,0])
     fig = plt.figure(1,figsize=(9,9))
     ax = fig.add_subplot(111, projection=w)
-    ax.scatter(df['RA'],df['DEC'],transform=ax.get_transform('world'))
+    ax.scatter(df['RA'],df['DEC'],transform=ax.get_transform('world'),s=2)
     print(len(master_table))
-    ax.scatter(master_table[RA_column],master_table[Dec_column],transform=ax.get_transform('world'),s=1)
-    ax.plot(df['RA'],df['DEC'],'.',transform=ax.get_transform('world'))
-    ax.set_xlim(pixels/-2.,pixels/2.)
-    ax.set_ylim(pixels/-2.,pixels/2.)
+    ax.scatter(master_table[RA_column],master_table[Dec_column],transform=ax.get_transform('world'),s=2)
+    #ax.plot(df['RA'],df['DEC'],'-',transform=ax.get_transform('world'))
+    #ax.set_xlim(pixels/-2.,pixels/2.)
+    #ax.set_ylim(pixels/-2.,pixels/2.)
     for i in range(len(df['RA'])):
         r = SphericalCircle((df['RA'][i] * u.deg, df['DEC'][i] * u.deg), phs_centre_fov * u.arcmin,
                      edgecolor='k', facecolor='none',
                      transform=ax.get_transform('world'))
         ax.add_patch(r)
-    fig.savefig('test.pdf')
+    fig.savefig('test.pdf',bbox_inches='tight')
     #plt.show()
