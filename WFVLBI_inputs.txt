@@ -6,12 +6,12 @@
 ### General ###
 ###---------###
 ## Smearing FoV - input smearing FoV (as radius from pointing centre, in arcmin)
-phs_centre_fov = 0.1
+phs_centre_fov = 0.5
 
 ###-----------------------------###
 ### Cover area in VLBI coverage ###
 ###-----------------------------###
-area = True
+area = False
 
 # Set coordinates for area ([[blcx,blcy,trcx,trcy],etc.]) in degrees
 area_coordinates = [[8,1,5,3],[3,4,5,6]]
@@ -38,11 +38,12 @@ flux_column = ''
 ###----------###
 ### Plotting ###
 ###----------###
-do_plots = False
+do_plots = True
 # Primary beam sizes to be plotted in metres
-PBs = [100,10]
+PBs = [25,32,100]
 # Observing frequency in GHz
-observing_frequency = 1e9
+observing_frequency = 1.6e9
+pointing_centre = [179.46983878477914, 62.25316273019386]
 # Background fits image overlay
 fitsimage=''
 

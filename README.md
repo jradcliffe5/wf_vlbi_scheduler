@@ -1,6 +1,6 @@
 # Wide-field VLBI scheduler
 
-This code generates the phase centres for wide-field VLBI correlation. The final version shall have capabilities to cover an entire area but currently only takes an input catalogue and outputs a VEX suitable format for correlators. 
+This code generates the phase centres for wide-field VLBI correlation. The final version shall have capabilities to cover an entire area but currently only takes an input catalogue and outputs a VEX format that's suitable format for correlators. 
 
 ## Prerequisites
 The code uses python 3.7 and requires the following dependencies that can be installed using `pip`
@@ -35,7 +35,7 @@ enddef;
 
 If you set `do_plot=True` then you can generate a plot of all the phase centres and their FoVs. The initial source positions along with reduced phase centre locations (as some could be overlapping) are also plotted. An example is shown below. 
 
-<img src="https://raw.githubusercontent.com/jradcliffe5/wf_vlbi_scheduler/master/testing/random_catalogue_correlation_params.png" width="200">
+<img src="https://raw.githubusercontent.com/jradcliffe5/wf_vlbi_scheduler/master/testing/random_catalogue_correlation_params.png" width="500">
 
 ### Supported catalogue formats
 

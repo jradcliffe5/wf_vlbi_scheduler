@@ -14,10 +14,12 @@ from astropy.coordinates import SkyCoord
 import astropy.units as u
 import ast
 from astropy.visualization.wcsaxes import SphericalCircle
-
+from itertools import cycle
 ### For the emailer and logger
 from wf_vlbi_functions import *
 import logging
+import scipy.constants as c
+from matplotlib.lines import Line2D
 ### Setup logger
 log_name = "%s.log" % os.path.basename(__file__).split('.py')[0]
 setup_logging_to_file(log_name)
@@ -38,7 +40,9 @@ phs_centre_fov = convert_frac_to_float(inputs['phs_centre_fov'])
 filter_overlap=str(inputs['filter_overlap'])
 do_plots= str(inputs['do_plots'])
 PB_plots= ast.literal_eval(inputs['PBs'])
+freq = float(inputs['observing_frequency'])
 output_correlation_list = str(inputs['write_correlation_list'])
+pointing_centre = ast.literal_eval(inputs['pointing_centre'])
 prefix = str(inputs['catalogue_prefix'])
 
 if do_targeted == 'True':
@@ -63,23 +67,44 @@ if do_targeted == 'True':
 if do_plots == 'True':
     logging.info('Plotting phase centres')
     centre_coords = [np.average(df['RA']),np.average(df['DEC'])]
+    print(centre_coords)
     pixels = 5000.
     large_range = np.max([np.max(master_table[RA_column])-np.min(master_table[RA_column]),np.max(master_table[Dec_column])-np.min(master_table[Dec_column])])*0.5
     w = generate_central_wcs(centre_coords,[large_range/pixels,large_range/pixels],[0,0])
     fig = plt.figure(1,figsize=(9,9))
     ax = fig.add_subplot(111, projection=w)
-    ax.scatter(df['RA'],df['DEC'],transform=ax.get_transform('world'),s=2)
-    print(len(master_table))
-    ax.scatter(master_table[RA_column],master_table[Dec_column],transform=ax.get_transform('world'),s=2)
+    ax.scatter(df['RA'],df['DEC'],c='k',marker='+',transform=ax.get_transform('world'),s=20,label='Phase centres')
+    ax.scatter(master_table[RA_column],master_table[Dec_column],transform=ax.get_transform('world'),s=2,label='Source positions')
+    leg1 = ax.legend(loc='upper left', bbox_to_anchor=(1.01, 0.6))
     #ax.plot(df['RA'],df['DEC'],'-',transform=ax.get_transform('world'))
     #ax.set_xlim(pixels/-2.,pixels/2.)
     #ax.set_ylim(pixels/-2.,pixels/2.)
     for i in range(len(df['RA'])):
         r = SphericalCircle((df['RA'][i] * u.deg, df['DEC'][i] * u.deg), phs_centre_fov * u.arcmin,
-                     edgecolor='k', facecolor='none',
-                     transform=ax.get_transform('world'))
+            edgecolor='k', facecolor='none',
+            transform=ax.get_transform('world'))
         ax.add_patch(r)
-    fig.savefig('%s_correlation_params.png'%catalogue.split('.')[0],bbox_inches='tight')
+    if len(PB_plots) != 0:
+        lst = cycle(['r','b','k','g'])
+        ls2 = cycle(['--','-.',':'])
+        custom_lines = []
+        handles = []
+        for i,j in enumerate(PB_plots):
+            iter1 = next(lst)
+            iter2 = next(ls2)
+            PB_fov = ((c.c/freq)/j)*(180./np.pi)
+            print(PB_fov)
+            r = SphericalCircle((float(pointing_centre[0])*u.deg, float(pointing_centre[1])*u.deg), PB_fov/2. * u.degree,
+                     edgecolor=iter1,linestyle=iter2, facecolor='none',lw=2,
+                     transform=ax.get_transform('world'))
+            ax.add_patch(r)
+            custom_lines.append(Line2D([0], [0], color=iter1,ls=iter2, lw=4))
+            handles.append(r'%s\,m'%j)
+    legend1 = ax.legend(custom_lines, handles, loc='upper left', bbox_to_anchor=(1.01, 0.5), title=r'\textbf{Primary beam}')
+    ax.add_artist(leg1)
+    ax.coords[0].set_axislabel('Right Ascension (J2000)')
+    ax.coords[1].set_axislabel('Declination (J2000)')
+    fig.savefig('%s/%s_correlation_plot.png'%(os.getcwd(),prefix),bbox_inches='tight')
     #plt.show()
 
 if output_correlation_list == 'True':
