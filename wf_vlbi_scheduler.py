@@ -38,10 +38,13 @@ phs_centre_fov = convert_frac_to_float(inputs['phs_centre_fov'])
 filter_overlap=str(inputs['filter_overlap'])
 do_plots= str(inputs['do_plots'])
 PB_plots= ast.literal_eval(inputs['PBs'])
+output_correlation_list = str(inputs['write_correlation_list'])
+prefix = str(inputs['catalogue_prefix'])
 
 if do_targeted == 'True':
     ### Read in tables
     df=ascii.read(catalogue,format=cat_type)
+    #print(df)
     master_table = ascii.read(catalogue,format=cat_type)
     filtered_coordinates=[]
     if filter_flux == 'True':
@@ -58,6 +61,7 @@ if do_targeted == 'True':
 
 
 if do_plots == 'True':
+    logging.info('Plotting phase centres')
     centre_coords = [np.average(df['RA']),np.average(df['DEC'])]
     pixels = 5000.
     large_range = np.max([np.max(master_table[RA_column])-np.min(master_table[RA_column]),np.max(master_table[Dec_column])-np.min(master_table[Dec_column])])*0.5
@@ -75,5 +79,14 @@ if do_plots == 'True':
                      edgecolor='k', facecolor='none',
                      transform=ax.get_transform('world'))
         ax.add_patch(r)
-    fig.savefig('test.pdf',bbox_inches='tight')
+    fig.savefig('%s_correlation_params.png'%catalogue.split('.')[0],bbox_inches='tight')
     #plt.show()
+
+if output_correlation_list == 'True':
+    logging.info('Writing phase centres into VEX format')
+    correlation_params = write_correlation_params(prefix=prefix,table=df)
+    with open('%s_correlation_params.vex' % prefix, 'w') as f:
+        for item in correlation_params:
+            f.write("%s\n" % item)
+    f.close()
+    logging.info('Complete... %s_correlation_params.vex has been written to the cwd' % prefix)
