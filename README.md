@@ -23,6 +23,20 @@ Before using this code, it is advisable to do some catalogue pre-processing. In 
 4. Run the script using `python <path to repository>/wf_vlbi_scheduler.py` or `python3` if you have both 2.7 & 3 installed.
 5. Check the output is as you expected (see the `*.vex` file).
 
+## Outputs
+The code should produce an output `vex` file format that should be readable by most VLBI correlators. The format is of the `$SOURCE` format required. It should look similar to the following (otherwise raise an issue).
+
+```
+def ER047001;
+    source_name = ER047001;
+    ra = 11h56m10.6548s; dec =  62d13'54.7893"; ref_coord_frame = J2000;
+enddef;
+```
+
+If you set `do_plot=True` then you can generate a plot of all the phase centres and their FoVs. The initial source positions along with reduced phase centre locations (as some could be overlapping) are also plotted. An example is shown below. 
+
+![Correlation plot for test_catalogue.csv](https://raw.githubusercontent.com/jradcliffe5/wf_vlbi_schedulere/master/testing/random_catalogue_correlation_params.png)
+
 ### Supported catalogue formats
 
 
