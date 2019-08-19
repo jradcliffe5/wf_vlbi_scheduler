@@ -23,7 +23,7 @@ targeted=True
 
 # Catalog name and type (will try to guess if type not set)
 catalog = 'testing/random_catalogue.csv'
-type = 'csv'
+table_format = 'csv'
 RA_column = 'RA'
 Dec_column = 'DEC'
 
