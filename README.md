@@ -35,7 +35,7 @@ enddef;
 
 If you set `do_plot=True` then you can generate a plot of all the phase centres and their FoVs. The initial source positions along with reduced phase centre locations (as some could be overlapping) are also plotted. An example is shown below. 
 
-<img src="ttps://raw.githubusercontent.com/jradcliffe5/wf_vlbi_scheduler/master/testing/random_catalogue_correlation_params.png" width="200">
+<img src="https://raw.githubusercontent.com/jradcliffe5/wf_vlbi_scheduler/master/testing/random_catalogue_correlation_params.png" width="200">
 
 ### Supported catalogue formats
 
