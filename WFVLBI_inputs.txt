@@ -6,7 +6,7 @@
 ### General ###
 ###---------###
 ## Smearing FoV - input smearing FoV (as radius from pointing centre, in arcmin)
-phs_centre_fov = 0.5
+phs_centre_fov = 20./60.
 
 ###-----------------------------###
 ### Cover area in VLBI coverage ###
@@ -30,6 +30,11 @@ Dec_column = 'DEC'
 # Filter overlaps where multiple phs centre covers same source
 filter_overlap=True
 
+# Filter by distance from pointing centre
+filter_distance = True
+pointing_centre = [179.5,62.25]
+radius = 15 # in arcminutes
+
 # Filter flux density (above value)
 filter_flux = False
 filter_value = 0
@@ -39,11 +44,11 @@ flux_column = ''
 ### Plotting ###
 ###----------###
 do_plots = True
-# Primary beam sizes to be plotted in metres
+# Primary beam sizes to be plotted in metres.
+# NB Need to set pointing_centre and observing_frequency too!
 PBs = [25,32,100]
 # Observing frequency in GHz
 observing_frequency = 1.6e9
-pointing_centre = [179.46983878477914, 62.25316273019386]
 # Background fits image overlay
 fitsimage=''
 

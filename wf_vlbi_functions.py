@@ -223,7 +223,7 @@ def filter_table(data,value):  ## Function to remove and filter the table of nea
 					indices[k] = indices[k]+[index]
 	return indices,result
 
-def build_filtered_table(table, filter, filter_indices, RA_col, Dec_col):
+def build_filtered_table(table, filter, filter_indices):
 	if filter == 'False':
 		return Table([table.ra.deg,table.dec.deg], names=('RA','DEC'))
 	else: 

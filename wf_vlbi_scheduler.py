@@ -44,6 +44,8 @@ freq = float(inputs['observing_frequency'])
 output_correlation_list = str(inputs['write_correlation_list'])
 pointing_centre = ast.literal_eval(inputs['pointing_centre'])
 prefix = str(inputs['catalogue_prefix'])
+filter_distance = str(inputs['filter_distance'])
+radius = float(inputs['radius'])
 
 if do_targeted == 'True':
     ### Read in tables
@@ -54,12 +56,17 @@ if do_targeted == 'True':
     if filter_flux == 'True':
         logging.info('Flux filtering. All sources above %.2f kept' % (filter_value))
         df = df[df[flux_column]>filter_value]
+    coords = SkyCoord(df[RA_column],df[Dec_column],unit=('deg','deg'))   ## Generate skycoord instance of fits file
+    if filter_distance == 'True':
+        pointing_centres = SkyCoord(pointing_centre[0],pointing_centre[1],unit=('deg','deg'))
+        truth_array = pointing_centres.separation(coords).to(u.arcmin).value < radius
+        df = df[truth_array]
+        coords = SkyCoord(df[RA_column],df[Dec_column],unit=('deg','deg'))
     if filter_overlap == 'True':
         logging.info('Overlap filtering. Reducing number of phase centres if there are FoV overlaps')
-        coords = SkyCoord(df[RA_column],df[Dec_column],unit=('deg','deg'))   ## Generate skycoord instance of fits file
         filtered_coordinates = filter_table(coords,phs_centre_fov) ## Filter the coordinates
 
-    df = build_filtered_table(coords,filter=filter_overlap,filter_indices=filtered_coordinates, RA_col=RA_column,Dec_col=Dec_column)
+    df = build_filtered_table(coords,filter=filter_overlap,filter_indices=filtered_coordinates)
     if filter_overlap == 'True':
         logging.info('Overlap filtered. Nphs reduced from %d to %d' % (len(master_table[RA_column]),len(df['RA'])))
 
