@@ -35,6 +35,10 @@ filter_distance = True
 pointing_centre = [179.5,62.25]
 radius = 15 # in arcminutes
 
+# MSSC addon - add sources back in that are above certain flux level
+MSSC_additions=True
+MSSC_flux = 1000
+
 # Filter flux density (above value)
 filter_flux = False
 filter_value = 0

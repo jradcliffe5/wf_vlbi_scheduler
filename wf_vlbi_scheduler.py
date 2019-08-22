@@ -46,6 +46,8 @@ pointing_centre = ast.literal_eval(inputs['pointing_centre'])
 prefix = str(inputs['catalogue_prefix'])
 filter_distance = str(inputs['filter_distance'])
 radius = float(inputs['radius'])
+MSSC_value = float(inputs['MSSC_flux'])
+MSSC_additions=str(inputs['MSSC_additions'])
 
 if do_targeted == 'True':
     ### Read in tables
@@ -56,11 +58,18 @@ if do_targeted == 'True':
     if filter_flux == 'True':
         logging.info('Flux filtering. All sources above %.2f kept' % (filter_value))
         df = df[df[flux_column]>filter_value]
+        logging.info('Flux filtered. Nphs reduced from %d to %d' % (len(master_table[RA_column]),len(df['RA'])))
     coords = SkyCoord(df[RA_column],df[Dec_column],unit=('deg','deg'))   ## Generate skycoord instance of fits file
     if filter_distance == 'True':
+        logging.info('Filtering by distance from phase centre. All sources further than %.1f\' from phase centre will be removed' % radius)
         pointing_centres = SkyCoord(pointing_centre[0],pointing_centre[1],unit=('deg','deg'))
         truth_array = pointing_centres.separation(coords).to(u.arcmin).value < radius
+        if MSSC_additions=='True':
+            logging.info('Adding in bright sources (above %.1f) in prior catalogue.' % MSSC_value)
+            truth_array_2 = (pointing_centres.separation(coords).to(u.arcmin).value > radius)&(df[flux_column]>MSSC_value)
+            truth_array[truth_array_2==True]=True
         df = df[truth_array]
+        logging.info('Distance filtered. Nphs reduced from %d to %d' % (len(master_table[RA_column]),len(df['RA'])))
         coords = SkyCoord(df[RA_column],df[Dec_column],unit=('deg','deg'))
     if filter_overlap == 'True':
         logging.info('Overlap filtering. Reducing number of phase centres if there are FoV overlaps')
@@ -115,10 +124,12 @@ if do_plots == 'True':
     #plt.show()
 
 if output_correlation_list == 'True':
+    logging.info('Writing phase centres into CSV format')
+    ascii.write(df, '%s_correlation_params.csv'%prefix, format='csv', fast_writer=False)
     logging.info('Writing phase centres into VEX format')
     correlation_params = write_correlation_params(prefix=prefix,table=df)
     with open('%s_correlation_params.vex' % prefix, 'w') as f:
         for item in correlation_params:
             f.write("%s\n" % item)
     f.close()
-    logging.info('Complete... %s_correlation_params.vex has been written to the cwd' % prefix)
+    logging.info('Complete... %s_correlation_params.vex/.csv has been written to the cwd' % prefix)
