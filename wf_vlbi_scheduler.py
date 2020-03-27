@@ -116,16 +116,16 @@ if do_plots == 'True':
             ax.add_patch(r)
             custom_lines.append(Line2D([0], [0], color=iter1,ls=iter2, lw=4))
             handles.append(r'%s\,m'%j)
-    legend1 = ax.legend(custom_lines, handles, loc='upper left', bbox_to_anchor=(1.01, 0.5), title=r'\textbf{Primary beam}')
+    legend1 = ax.legend(custom_lines, handles, loc='upper left', bbox_to_anchor=(1.01, 0.45), title=r'\textbf{Primary beam}')
     ax.add_artist(leg1)
     ax.coords[0].set_axislabel('Right Ascension (J2000)')
     ax.coords[1].set_axislabel('Declination (J2000)')
-    fig.savefig('%s/%s_correlation_plot.png'%(os.getcwd(),prefix),bbox_inches='tight')
+    fig.savefig('%s/%s_correlation_plot.pdf'%(os.getcwd(),prefix),bbox_inches='tight')
     #plt.show()
 
 if output_correlation_list == 'True':
     logging.info('Writing phase centres into CSV format')
-    ascii.write(df, '%s_correlation_params.csv'%prefix, format='csv', fast_writer=False)
+    ascii.write(df, '%s_correlation_params.csv'%prefix, format='csv', fast_writer=False,overwrite=True)
     logging.info('Writing phase centres into VEX format')
     correlation_params = write_correlation_params(prefix=prefix,table=df)
     with open('%s_correlation_params.vex' % prefix, 'w') as f:
