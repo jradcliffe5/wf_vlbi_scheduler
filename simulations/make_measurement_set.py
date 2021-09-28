@@ -81,9 +81,9 @@ elif sys.argv[1] == 'mosaic':
 			direction.append([line[2],line[4]])
 	total_time = tos
 	for i in range(len(direction)):
-		os.system('rm -r %s/%s_mosaic_%s.ms'%(output,arrays,i))
+		os.system('rm -r %s/mosaic_%s.ms'%(output,i))
 		dt = datetime.strptime('20 Sep 2021', '%d %b %Y') #+ timedelta(hours=2/60+(0*total_time/float(len(direction))))
-		MS='%s/%s_mosaic_%s.ms'%(output,arrays,i)
+		MS='%s/mosaic_%s.ms'%(output,i)
 		simms.create_empty_ms(
 		msname=MS,
 		label=None,
