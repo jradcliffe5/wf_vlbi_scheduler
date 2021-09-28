@@ -70,6 +70,7 @@ commands.append('%s -name %s/single_pointing -no-update-model-required --aterm-k
 if inputs['mosaic'] == "False":
 	commands.append('%s single_pointing-image-pb.fits'%(inputs['rms_exec']))
 else:
+	commands.append('%s simulations/fit_pb.py'%(inputs['CASA_exec']))
 	commands.append('%s simulations/generate_mosaic_pointings.py'%(inputs['CASA_exec']))
 
 with open('job_%s.%s'%(step,params['job_manager']), 'a') as filehandle:
