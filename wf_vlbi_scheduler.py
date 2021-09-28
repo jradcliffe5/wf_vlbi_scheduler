@@ -20,6 +20,7 @@ from wf_vlbi_functions import *
 import logging
 import scipy.constants as c
 from matplotlib.lines import Line2D
+
 ### Setup logger
 log_name = "%s.log" % os.path.basename(__file__).split('.py')[0]
 setup_logging_to_file(log_name)
@@ -27,7 +28,7 @@ logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 logging.info('Beginning %s' % os.path.basename(__file__))
 
 
-inputs = headless('WFVLBI_inputs.txt')
+inputs = headless('scheduler_inputs.txt')
 do_targeted = str(inputs['targeted'])
 catalogue = str(inputs['catalog'])
 cat_type = str(inputs['table_format'])

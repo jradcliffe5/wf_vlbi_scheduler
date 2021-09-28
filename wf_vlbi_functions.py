@@ -53,7 +53,7 @@ def headless(inputfile):
 			param = param.strip()
 			param = space.sub(r'', param)
 			value = newline.sub(r'', value)
-			value = value.replace(' ','').strip()
+			value = value.strip()
 			valuelist = value.split(',')
 			if len(valuelist) == 1:
 				if valuelist[0] == '0' or valuelist[0]=='1' or valuelist[0]=='2':
