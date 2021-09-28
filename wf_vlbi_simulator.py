@@ -107,6 +107,10 @@ if part==2:
 		## Convert to casa ims
 		commands.append('%s convert_fits_to_casa.py ${array[$a]}'%inputs['CASA_exec'])
 
+		with open('job_%s.%s'%(step,params['job_manager']), 'a') as filehandle:
+			for listitem in commands:
+				filehandle.write('%s\n' % listitem)
+
 	'''
 	array=(mosaic_ms/*.ms)
 	len=${#array[@]}
