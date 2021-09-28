@@ -19,6 +19,7 @@ except:
 
 ## Load global inputs
 inputs = headless(sys.argv[i])
+part = int(sys.argv[i+1])
 
 ## Set the parameters for the HPC resources
 params = {}
@@ -46,73 +47,75 @@ singularity exec /idia/software/containers/wsclean-gpu.simg wsclean -name evn_em
 singularity exec /idia/software/containers/wsclean-gpu.simg wsclean -name evn_emerlin_uni -no-update-model-required --aterm-kernel-size 157 -weight uniform -scale 1asec -niter 1 -mgain 0.9 -auto-threshold 0.5 -auto-mask 4 -use-idg -idg-mode hybrid -aterm-config evn_emerlin.ms_aterm_norotate_config.txt -size 2048 2048 evn_emerlin.ms
 '''
 ## Generate single pointing to fit beam
-commands = []
-step = 'single_pointing'
-write_hpc_headers(step,params)
-
-## Generate itrfs
-antennae = ast.literal_eval(inputs['antennae'])
-commands.append('%s simulations/make_itrf.py %s'%(inputs['CASA_exec']," ".join(antennae)))
-
-## Generate measurement set
-commands.append('%s simulations/make_measurement_set.py single simulator_inputs.txt'%(inputs['stimela_exec']))
-
-## Add noise to measurement sets & flag
-commands.append('%s simulations/add_noise_hetero.py %s/single_pointing.ms %d'%(inputs['CASA_exec'],inputs['output_path'],int(inputs['size'])))
-
-## Generate a terms
-commands.append('%s simulations/generate_pb_aterms.py %s/single_pointing.ms 0 0 0'%(inputs['CASA_exec'],inputs['output_path']))
-
-## Unzip a terms
-commands.append('gunzip -f %s/single_pointing.ms_pb_flat_norotate.fits.gz'%(inputs['output_path']))
-
-## Wsclean primary beam
-commands.append('%s -name %s/single_pointing -no-update-model-required --aterm-kernel-size 157 -weight %s -scale 1asec -niter 1 -mgain 0.9 -auto-threshold 0.5 -auto-mask 4 -use-idg -idg-mode hybrid -aterm-config single_pointing.ms_aterm_norotate_config.txt -size %d %d %s/single_pointing.ms'%(inputs['wsclean_exec'],inputs['output_path'],inputs['weight'],int(inputs['size']),int(inputs['size']),inputs['output_path']))
-
-if inputs['mosaic'] == "False":
-	commands.append('%s single_pointing-image-pb.fits'%(inputs['rms_exec']))
-else:
-	commands.append('%s simulations/fit_pb.py'%(inputs['CASA_exec']))
-	commands.append('%s simulations/generate_mosaic_pointings.py'%(inputs['CASA_exec']))
-	commands.append('%s simulations/make_measurement_set.py mosaic simulator_inputs.txt'%(inputs['stimela_exec']))
-
-with open('job_%s.%s'%(step,params['job_manager']), 'a') as filehandle:
-	for listitem in commands:
-		filehandle.write('%s\n' % listitem)
-
-if inputs['mosaic'] == "True":
+if part == 1:
 	commands = []
-	step = 'mosaic'
+	step = 'single_pointing'
 	write_hpc_headers(step,params)
 
-	commands.append('array=(%s/mosaic_*.ms)'%inputs['output_path'])
-	commands.append('len=${#array[@]}')
-	commands.append('a=$SLURM_ARRAY_TASK_ID')
+	## Generate itrfs
+	antennae = ast.literal_eval(inputs['antennae'])
+	commands.append('%s simulations/make_itrf.py %s'%(inputs['CASA_exec']," ".join(antennae)))
 
-	## Add noise to all ms
-	commands.append('%s simulations/add_noise_hetero.py ${array[$a]} %d'%(inputs['CASA_exec'],int(inputs['size'])))
+	## Generate measurement set
+	commands.append('%s simulations/make_measurement_set.py single simulator_inputs.txt'%(inputs['stimela_exec']))
 
-	## Make all a terms
-	commands.append('%s simulations/generate_pb_aterms.py ${array[$a]} 0 0 0'%(inputs['CASA_exec']))
+	## Add noise to measurement sets & flag
+	commands.append('%s simulations/add_noise_hetero.py %s/single_pointing.ms %d'%(inputs['CASA_exec'],inputs['output_path'],int(inputs['size'])))
+
+	## Generate a terms
+	commands.append('%s simulations/generate_pb_aterms.py %s/single_pointing.ms 0 0 0'%(inputs['CASA_exec'],inputs['output_path']))
 
 	## Unzip a terms
-	commands.append('gunzip -f ${array[$a]}"_pb_flat_norotate.fits.gz')
+	commands.append('gunzip -f %s/single_pointing.ms_pb_flat_norotate.fits.gz'%(inputs['output_path']))
 
-	## Make images
-	commands.append('%s -name %s/${array[$a]}_IM -no-update-model-required --aterm-kernel-size 157 -weight %s -scale 1asec -niter 1 -mgain 0.9 -auto-threshold 0.5 -auto-mask 4 -use-idg -idg-mode hybrid -aterm-config ${array[$a]}_aterm_norotate_config.txt -size %d %d ${array[$a]}'%(inputs['wsclean_exec'],inputs['output_path'],inputs['weight'],int(inputs['size']),int(inputs['size'])))
+	## Wsclean primary beam
+	commands.append('%s -name %s/single_pointing -no-update-model-required --aterm-kernel-size 157 -weight %s -scale 1asec -niter 1 -mgain 0.9 -auto-threshold 0.5 -auto-mask 4 -use-idg -idg-mode hybrid -aterm-config single_pointing.ms_aterm_norotate_config.txt -size %d %d %s/single_pointing.ms'%(inputs['wsclean_exec'],inputs['output_path'],inputs['weight'],int(inputs['size']),int(inputs['size']),inputs['output_path']))
 
-	## Convert to casa ims
-	commands.append('%s convert_fits_to_casa.py ${array[$a]}'%inputs['CASA_exec'])
+	if inputs['mosaic'] == "False":
+		commands.append('%s single_pointing-image-pb.fits'%(inputs['rms_exec']))
+	else:
+		commands.append('%s simulations/fit_pb.py'%(inputs['CASA_exec']))
+		commands.append('%s simulations/generate_mosaic_pointings.py'%(inputs['CASA_exec']))
+		commands.append('%s simulations/make_measurement_set.py mosaic simulator_inputs.txt'%(inputs['stimela_exec']))
 
-'''
-array=(mosaic_ms/*.ms)
-len=${#array[@]}
-a=$SLURM_ARRAY_TASK_ID
+	with open('job_%s.%s'%(step,params['job_manager']), 'a') as filehandle:
+		for listitem in commands:
+			filehandle.write('%s\n' % listitem)
 
-singularity exec /idia/software/containers/casa-6.3.simg python add_noise_hetero.py ${array[$a]} 2048
-singularity exec /idia/software/containers/casa-6.3.simg python generate_pb_aterms.py ${array[$a]} 0 0 0 
-gunzip ${array[$a]}"_pb_flat_norotate.fits.gz"
-singularity exec /idia/software/containers/wsclean-gpu.simg wsclean -name ${array[$a]}_image -no-update-model-required --aterm-kernel-size 157 -weight natural -scale 1asec -niter 1 -mgain 0.9 -auto-threshold 0.5 -auto-mask 4 -use-idg -idg-mode hybrid -aterm-config ${array[$a]}_aterm_norotate_config.txt -size 2048 2048 ${array[$a]}
-singularity exec /idia/software/containers/casa-6.3.simg python convert_fits_to_casa.py ${array[$a]}
-rm casa*log
-'''
+if part==2:
+	if inputs['mosaic'] == "True":
+		commands = []
+		step = 'mosaic'
+		write_hpc_headers(step,params)
+
+		commands.append('array=(%s/mosaic_*.ms)'%inputs['output_path'])
+		commands.append('len=${#array[@]}')
+		commands.append('a=$SLURM_ARRAY_TASK_ID')
+
+		## Add noise to all ms
+		commands.append('%s simulations/add_noise_hetero.py ${array[$a]} %d'%(inputs['CASA_exec'],int(inputs['size'])))
+
+		## Make all a terms
+		commands.append('%s simulations/generate_pb_aterms.py ${array[$a]} 0 0 0'%(inputs['CASA_exec']))
+
+		## Unzip a terms
+		commands.append('gunzip -f ${array[$a]}"_pb_flat_norotate.fits.gz')
+
+		## Make images
+		commands.append('%s -name %s/${array[$a]}_IM -no-update-model-required --aterm-kernel-size 157 -weight %s -scale 1asec -niter 1 -mgain 0.9 -auto-threshold 0.5 -auto-mask 4 -use-idg -idg-mode hybrid -aterm-config ${array[$a]}_aterm_norotate_config.txt -size %d %d ${array[$a]}'%(inputs['wsclean_exec'],inputs['output_path'],inputs['weight'],int(inputs['size']),int(inputs['size'])))
+
+		## Convert to casa ims
+		commands.append('%s convert_fits_to_casa.py ${array[$a]}'%inputs['CASA_exec'])
+
+	'''
+	array=(mosaic_ms/*.ms)
+	len=${#array[@]}
+	a=$SLURM_ARRAY_TASK_ID
+
+	singularity exec /idia/software/containers/casa-6.3.simg python add_noise_hetero.py ${array[$a]} 2048
+	singularity exec /idia/software/containers/casa-6.3.simg python generate_pb_aterms.py ${array[$a]} 0 0 0 
+	gunzip ${array[$a]}"_pb_flat_norotate.fits.gz"
+	singularity exec /idia/software/containers/wsclean-gpu.simg wsclean -name ${array[$a]}_image -no-update-model-required --aterm-kernel-size 157 -weight natural -scale 1asec -niter 1 -mgain 0.9 -auto-threshold 0.5 -auto-mask 4 -use-idg -idg-mode hybrid -aterm-config ${array[$a]}_aterm_norotate_config.txt -size 2048 2048 ${array[$a]}
+	singularity exec /idia/software/containers/casa-6.3.simg python convert_fits_to_casa.py ${array[$a]}
+	rm casa*log
+	'''
