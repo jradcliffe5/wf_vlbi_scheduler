@@ -43,7 +43,7 @@ field_centre          = ["12h36m42s", "60d00m00s"] # Field centre (pointing cent
 total_time_on_source  = 200                        # Total time on source in hours
 mosaic                = True                       # Make a mosaic
 mosaic_area           = [2,2]                      # Mosaic area in degrees    
-mosaic_filling_factor = 0.6                        # Filling factor for mosaic (increase if want non-uniform sensitivity)
+mosaic_filling_factor = 2.0                        # Filling factor for mosaic (increase if want non-uniform sensitivity)
 
 ###-----------------###
 ###     Imaging     ###

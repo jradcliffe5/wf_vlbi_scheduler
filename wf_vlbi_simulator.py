@@ -84,3 +84,35 @@ if inputs['mosaic'] == "True":
 	commands = []
 	step = 'mosaic'
 	write_hpc_headers(step,params)
+
+	commands.append('array=(%s/mosaic_*.ms)'%inputs['output_path'])
+	commands.append('len=${#array[@]}')
+	commands.append('a=$SLURM_ARRAY_TASK_ID')
+
+	## Add noise to all ms
+	commands.append('%s simulations/add_noise_hetero.py ${array[$a]} %d'%(inputs['CASA_exec'],int(inputs['size'])))
+
+	## Make all a terms
+	commands.append('%s simulations/generate_pb_aterms.py ${array[$a]} 0 0 0'%(inputs['CASA_exec']))
+
+	## Unzip a terms
+	commands.append('gunzip -f ${array[$a]}"_pb_flat_norotate.fits.gz')
+
+	## Make images
+	commands.append('%s -name %s/${array[$a]}_IM -no-update-model-required --aterm-kernel-size 157 -weight %s -scale 1asec -niter 1 -mgain 0.9 -auto-threshold 0.5 -auto-mask 4 -use-idg -idg-mode hybrid -aterm-config ${array[$a]}_aterm_norotate_config.txt -size %d %d ${array[$a]}'%(inputs['wsclean_exec'],inputs['output_path'],inputs['weight'],int(inputs['size']),int(inputs['size'])))
+
+	## Convert to casa ims
+	commands.append('%s convert_fits_to_casa.py ${array[$a]}'%inputs['CASA_exec'])
+
+'''
+array=(mosaic_ms/*.ms)
+len=${#array[@]}
+a=$SLURM_ARRAY_TASK_ID
+
+singularity exec /idia/software/containers/casa-6.3.simg python add_noise_hetero.py ${array[$a]} 2048
+singularity exec /idia/software/containers/casa-6.3.simg python generate_pb_aterms.py ${array[$a]} 0 0 0 
+gunzip ${array[$a]}"_pb_flat_norotate.fits.gz"
+singularity exec /idia/software/containers/wsclean-gpu.simg wsclean -name ${array[$a]}_image -no-update-model-required --aterm-kernel-size 157 -weight natural -scale 1asec -niter 1 -mgain 0.9 -auto-threshold 0.5 -auto-mask 4 -use-idg -idg-mode hybrid -aterm-config ${array[$a]}_aterm_norotate_config.txt -size 2048 2048 ${array[$a]}
+singularity exec /idia/software/containers/casa-6.3.simg python convert_fits_to_casa.py ${array[$a]}
+rm casa*log
+'''
