@@ -1,8 +1,5 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[7]:
-
+import matplotlib
+matplotlib.use('Agg')
 
 import numpy as np
 import os, ast, sys
@@ -14,8 +11,7 @@ import astropy.units as u
 from astropy.io import fits
 from matplotlib.colors import SymLogNorm
 import pandas as pd
-import matplotlib
-matplotlib.use('Agg')
+
 from simulator_functions import *
 
 inputs = headless('simulator_inputs.txt') ## replace with sys.argv
