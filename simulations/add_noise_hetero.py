@@ -28,6 +28,7 @@ def match_to_antenna_nos(evn_SEFD,msfile):
 	tb.open('%s/ANTENNA'%msfile)
 	x = tb.getcol('NAME')
 	tb.close()
+	print(evn_SEFD)
 	for i,j in enumerate(x):
 		evn_SEFD_2[i] = evn_SEFD[j][0]
 		evn_diams[i] = evn_SEFD[j][1]
