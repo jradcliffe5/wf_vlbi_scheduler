@@ -1,14 +1,5 @@
 import re, os, inspect, sys
 import numpy as np
-import os
-from astropy.coordinates import SkyCoord
-from astropy.visualization.wcsaxes import SphericalCircle
-import matplotlib.pyplot as plt
-from astropy import wcs
-import astropy.units as u
-from astropy.io import fits
-from matplotlib.colors import SymLogNorm
-import pandas as pd
 
 def headless(inputfile):
 	''' Parse the list of inputs given in the specified file. (Modified from evn_funcs.py)'''
