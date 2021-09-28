@@ -27,7 +27,7 @@ else:
 	bit = 1.
 	stokes = 'RR'
 bw = data_rate/bit/4.
-freq0 = float(obs_freq)-(bw/2000.)
+freq0 = float(inputs['obs_freq'])-(bw/2000.)
 
 if sys.argv[1] == 'single':
 	os.system('rm -r %s/single_pointing.ms'%output)
