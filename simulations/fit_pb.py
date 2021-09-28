@@ -1,13 +1,13 @@
-#!/usr/bin/env python
+import matplotlib
+matplotlib.use('Agg')
+
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy.modeling import models, fitting
 from astropy.io import fits
-import matplotlib
 from simulator_functions import headless
 from astropy.wcs import WCS
 from matplotlib.gridspec import GridSpec
-matplotlib.use('Agg')
 
 
 inputs = headless('simulator_inputs.txt')
