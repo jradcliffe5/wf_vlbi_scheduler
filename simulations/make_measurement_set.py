@@ -1,7 +1,8 @@
 from simms import simms
-import os, glob, sys
+import os, glob, sys, ast
 import numpy as np
 from datetime import datetime, timedelta
+from simulator_functions import headless
 
 #INPUT  = "input"
 #OUTPUT = "output"
@@ -10,27 +11,42 @@ from datetime import datetime, timedelta
 #stimela.register_globals()
 #SKYMODEL   = "blank_sky.txt"
 import sys
-arrays = sys.argv[2:]
-arrays = "_".join(arrays)
+inputs = headless(sys.argv[2])
+output = str(inputs['output_path'])
+
+## Calculate datarates
+data_rate = float(inputs['data_rate'])
+npols = float(inputs['npols'])
+if npols >=2.:
+	bit = 2.
+	if npols == 4.:
+		stokes ='RR RL LR LL'
+	else:
+		stokes='RR LL'
+else:
+	bit = 1.
+	stokes = 'RR'
+bw = data_rate/bit/4.
+freq0 = float(obs_freq)-(bw/2000.)
 
 if sys.argv[1] == 'single':
-	os.system('rm -r %s.ms'%arrays)
-	MS='%s.ms'%arrays
+	os.system('rm -r %s/single_pointing.ms'%output)
+	MS='%s/single_pointing.ms'
 	simms.create_empty_ms(
 	msname=MS,
 	label=None,
 	tel="EVN",
-	pos="%s_vlapos_sims.itrf"%arrays,
+	pos="%s/vlapos_sims.itrf"%output,
 	pos_type='ascii',
 	ra="12h00m00s",
 	dec="60d00m00s",
 	synthesis=12,
 	scan_length=[1],
 	dtime=10,
-	freq0="1.536GHz",#1536000000.0,
-	dfreq="4MHz",
+	freq0="%.8fGHz"%freq0,#1536000000.0,
+	dfreq="%.8fMHz"%(bw/32.),
 	nchan="32",
-	stokes='RR RL LR LL',
+	stokes=stokes,
 	setlimits=False,
 	elevation_limit=0,
 	shadow_limit=0,
