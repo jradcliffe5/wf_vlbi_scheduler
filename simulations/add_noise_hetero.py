@@ -99,9 +99,9 @@ def check_elevation(msfile,custom_xyz=False):
 	station_names = tb.getcol('NAME')
 	if custom_xyz == True:
 		if 'mosaic' in msfile:
-			df = pd.read_csv('%s_sims.itrf'%msfile.split('_mosaic')[0],delimiter=" ", header=None,names=['X', 'Y', 'Z', 'dish_diam', 'station', 'mount'],index_col=False)
+			df = pd.read_csv('sims.itrf',delimiter=" ", header=None,names=['X', 'Y', 'Z', 'dish_diam', 'station', 'mount'],index_col=False)
 		else:
-			df = pd.read_csv('%s_sims.itrf'%msfile.split('.ms')[0],delimiter=" ", header=None,names=['X', 'Y', 'Z', 'dish_diam', 'station', 'mount'],index_col=False)
+			df = pd.read_csv('sims.itrf',delimiter=" ", header=None,names=['X', 'Y', 'Z', 'dish_diam', 'station', 'mount'],index_col=False)
 		pos = np.vstack([df['X'].to_numpy(),df['Y'].to_numpy(),df['Z'].to_numpy()])
 	else:
 		pos = tb.getcol('POSITION')
