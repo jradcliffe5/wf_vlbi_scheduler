@@ -29,7 +29,7 @@ email_progress    =  jack.f.radcliffe@gmail.com
 ### Array set-up ###
 ###--------------###
 
-antennae  = ["Ef","Jb1","Tm65","W1","On","Tr","Sv","Bd","Zc","Ur","Da","Kn","Pi","Deg"]        # List of antennae (uses same codenames as the EVN calculator)
+antennae  = ["Ef","Jb1","Tm65","W1","On","Tr","Sv","Bd","Zc","Ur","Da","Kn","Pi","De"]        # List of antennae (uses same codenames as the EVN calculator)
 data_rate = 2048                # Data-rate in Mbit/s
 npols     = 4                   # Number of polarisations
 obs_freq  = 1.5                 # Central observing frequency (in GHz)
