@@ -15,7 +15,7 @@ output_path  = ./
 ###    HPC options    ###
 ###-------------------###
 
-job_manager       =  slurm
+job_manager       =  bash
 HPC_project_code  =  
 partition         =  GPU
 walltime          =  10:00:00
