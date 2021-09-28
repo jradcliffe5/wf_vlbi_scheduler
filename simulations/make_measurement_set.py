@@ -31,7 +31,7 @@ freq0 = float(inputs['obs_freq'])-(bw/2000.)
 
 if sys.argv[1] == 'single':
 	os.system('rm -r %s/single_pointing.ms'%output)
-	MS='%s/single_pointing.ms'
+	MS='%s/single_pointing.ms'%output
 	simms.create_empty_ms(
 	msname=MS,
 	label=None,
