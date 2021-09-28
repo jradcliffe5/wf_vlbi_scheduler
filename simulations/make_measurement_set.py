@@ -29,6 +29,13 @@ else:
 bw = data_rate/bit/4.
 freq0 = float(inputs['obs_freq'])-(bw/2000.)
 
+if inputs['mosaic'] == "True":
+	tos = 12
+else:
+	tos = float(inputs['total_time_on_source'])
+
+pointing_centre = ast.literal_eval(inputs['field_centre'])
+
 if sys.argv[1] == 'single':
 	os.system('rm -r %s/single_pointing.ms'%output)
 	MS='%s/single_pointing.ms'%output
@@ -38,9 +45,9 @@ if sys.argv[1] == 'single':
 	tel="EVN",
 	pos="%s/vlapos_sims.itrf"%output,
 	pos_type='ascii',
-	ra="12h00m00s",
-	dec="60d00m00s",
-	synthesis=12,
+	ra=pointing_centre[0],
+	dec=pointing_centre[1],
+	synthesis=tos,
 	scan_length=[1],
 	dtime=10,
 	freq0="%.8fGHz"%freq0,#1536000000.0,
@@ -65,8 +72,6 @@ if sys.argv[1] == 'single':
 	optimise_start=None
 	)
 elif sys.argv[1] == 'mosaic':
-	os.system('rm -r mosaic_ms')
-	os.system('mkdir mosaic_ms')
 	with open('mosaic.csv') as f:
 		lines = f.readlines()
 	direction = []
@@ -74,16 +79,16 @@ elif sys.argv[1] == 'mosaic':
 		if not i.startswith('#'):
 			line = i.split(" ")
 			direction.append([line[2],line[4]])
-	total_time = 200.0
+	total_time = tos
 	for i in range(len(direction)):
-		print(direction[i])
+		os.system('rm -r %s/%s_mosaic_%s.ms'%(output,arrays,i))
 		dt = datetime.strptime('20 Sep 2021', '%d %b %Y') #+ timedelta(hours=2/60+(0*total_time/float(len(direction))))
-		MS='mosaic_ms/%s_mosaic_%s.ms'%(arrays,i)
+		MS='%s/%s_mosaic_%s.ms'%(output,arrays,i)
 		simms.create_empty_ms(
 		msname=MS,
 		label=None,
 		tel="EVN",
-		pos="%s_vlapos_sims.itrf"%arrays,
+		pos="%s/vlapos_sims.itrf"%output,
 		pos_type='ascii',
 		ra=direction[i][0],
 		dec=direction[i][1],
@@ -91,10 +96,10 @@ elif sys.argv[1] == 'mosaic':
 		synthesis=total_time/float(len(direction)),
 		scan_length=[1],
 		dtime=10,
-		freq0="1.536GHz",#1536000000.0,
-		dfreq="4MHz",
+		freq0="%.8fGHz"%freq0,#1536000000.0,
+		dfreq="%.8fMHz"%(bw/32.),
 		nchan="32",
-		stokes='RR RL LR LL',
+		stokes=stokes,
 		setlimits=False,
 		elevation_limit=0,
 		shadow_limit=0,

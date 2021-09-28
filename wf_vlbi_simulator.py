@@ -67,6 +67,16 @@ commands.append('gunzip %s/single_pointing.ms_pb_flat_norotate.fits.gz'%(inputs[
 ## Wsclean primary beam
 commands.append('%s -name %s/single_pointing -no-update-model-required --aterm-kernel-size 157 -weight %s -scale 1asec -niter 1 -mgain 0.9 -auto-threshold 0.5 -auto-mask 4 -use-idg -idg-mode hybrid -aterm-config single_pointing.ms_aterm_norotate_config.txt -size %d %d %s/single_pointing.ms'%(inputs['wsclean_exec'],inputs['output_path'],inputs['weight'],int(inputs['size']),int(inputs['size']),inputs['output_path']))
 
+if inputs['mosaic'] == "False":
+	commands.append('%s single_pointing-image-pb.fits'%(inputs['rms_exec']))
+else:
+	commands.append('%s simulations/generate_mosaic_pointings.py'%(inputs['CASA_exec']))
+
 with open('job_%s.%s'%(step,params['job_manager']), 'a') as filehandle:
 	for listitem in commands:
 		filehandle.write('%s\n' % listitem)
+
+if inputs['mosaic'] == "True":
+	commands = []
+	step = 'mosaic'
+	write_hpc_headers(step,params)

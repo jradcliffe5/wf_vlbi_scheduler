@@ -8,7 +8,7 @@
 CASA_exec    = singularity exec /idia/software/containers/casa-6.3.simg python
 wsclean_exec = singularity exec /idia/software/containers/wsclean-gpu.simg wsclean
 stimela_exec = ../../STIMELA_SINGULARITY_IMAGES/stimela_simms_1.2.0.img python
-rms_exec     = 
+rms_exec     = singularity exec /idia/software/containers/SF-PY3-bionic-2020-08-14.simg BANE
 output_path  = ./
 
 ###-------------------###
@@ -38,11 +38,11 @@ obs_freq  = 1.5                 # Central observing frequency (in GHz)
 ###-----------------------------###
 ###      Observing scheme       ###
 ###-----------------------------###
-field_centre          = 12h36m42s, 60d00m00s  # Field centre (pointing centre if mosaic=False otherwise mosaic centre)
-total_time_on_source  = 200                   # Total time on source in hours
-mosaic                = True                  # Make a mosaic
-mosaic_area           = 2deg,2deg             # Mosaic area     
-mosaic_filling_factor = 0.6                   # Filling factor for mosaic (increase if want non-uniform sensitivity)
+field_centre          = ["12h36m42s", "60d00m00s"] # Field centre (pointing centre if mosaic=False otherwise mosaic centre)
+total_time_on_source  = 200                        # Total time on source in hours
+mosaic                = True                       # Make a mosaic
+mosaic_area           = [2,2]                      # Mosaic area in degrees    
+mosaic_filling_factor = 0.6                        # Filling factor for mosaic (increase if want non-uniform sensitivity)
 
 ###-----------------###
 ###     Imaging     ###
