@@ -53,7 +53,7 @@ antennae = ast.literal_eval(inputs['antennae'])
 commands.append('%s simulations/make_itrf.py %s'%(inputs['CASA_exec']," ".join(antennae)))
 
 ## Generate measurement set
-commands.append('%s simulations/make_measurement_set.py single %s %s'%(inputs['stimela_exec'],inputs['output_path']," ".join(antennae)))
+commands.append('%s simulations/make_measurement_set.py single simulator_inputs.txt'%(inputs['stimela_exec']))
 
 with open('job_%s.%s'%(step,params['job_manager']), 'a') as filehandle:
 	for listitem in commands:
