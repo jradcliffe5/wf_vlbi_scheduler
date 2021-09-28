@@ -55,6 +55,9 @@ commands.append('%s simulations/make_itrf.py %s'%(inputs['CASA_exec']," ".join(a
 ## Generate measurement set
 commands.append('%s simulations/make_measurement_set.py single simulator_inputs.txt'%(inputs['stimela_exec']))
 
+## Add noise to measurement sets & flag
+commands.append('%s simulations/add_noise_hetero.py %s/single_pointing.ms %d'%(inputs['CASA_exec'],inputs['output_path'],inputs['size']))
+
 with open('job_%s.%s'%(step,params['job_manager']), 'a') as filehandle:
 	for listitem in commands:
 		filehandle.write('%s\n' % listitem)

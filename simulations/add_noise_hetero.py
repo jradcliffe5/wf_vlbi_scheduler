@@ -461,31 +461,26 @@ def add_pt_src(msfile,pt_flux):
 	#uvsub(vis=msfile,reverse=True)
 	os.system('rm -r %s.cl'%msfile)
 
-evn_SEFD = {'EF':[19,76],
-			'T6':[39,65],
-			'JB':[40,67],
-			'WB':[560,25],
-			'O8':[350,25],
-			'MC':[700,32],
-			'TR':[300,32],
-			'SV':[360,32],
-			'BD':[330,32],
-			'ZC':[300,32],
-			'UR':[300,25],
-			'CM':[175,32],
-			'DA':[450,25],
-			'KN':[400,25],
-			'PI':[450,25],
-			'DE':[350,25],
-			'M2':[300,25]}
-
-print(sys.argv)
+evn_SEFD = {'Ef':[19,76],
+			'Tm65':[39,65],
+			'Jb1':[40,67],
+			'W1':[560,25],
+			'On':[350,25],
+			'Mc':[700,32],
+			'Tr':[300,32],
+			'Sv':[360,32],
+			'Bd':[330,32],
+			'Zc':[300,32],
+			'Ur':[300,25],
+			'Cm':[175,32],
+			'Da':[450,25],
+			'Kn':[400,25],
+			'Pi':[450,25],
+			'De':[350,25],
+			'Jb2':[300,25]}
 
 ms = sys.argv[1]
 imsize = int(sys.argv[2])
-
-
-
 
 cell = '1arcsec'
 print('Clearing cal')
@@ -496,15 +491,7 @@ print('Match antennae')
 sefd_ants, diams_ants = match_to_antenna_nos(evn_SEFD,ms)
 print('Add noise')
 add_noise(msfile=ms,datacolumn='CORRECTED_DATA',evn_SEFD=sefd_ants)
-#print('add point')
-#add_pt_src(msfile=ms,pt_flux=pt_flux)
-#if synthetic_aperture == False:
-#	print('make pbcor')
-#	calc_pb_corr(msfile=ms,diam_ants=diams_ants,single_freq=single_freq)
-#else:
-#	print('make synth')
-#	calc_pb_synthetic(msfile=ms,diam_ants=diams_ants,single_freq=single_freq,array=ms.split('_')[0])
-#uvsub(vis=ms,reverse=True)
+
 
 os.system('rm -r %s_IM.*'%ms.split('.ms')[0])
 tclean(vis=ms,

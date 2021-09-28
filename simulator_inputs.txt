@@ -39,13 +39,13 @@ obs_freq  = 1.5                 # Central observing frequency (in GHz)
 ###      Observing scheme       ###
 ###-----------------------------###
 field_centre          = 12h36m42s, 60d00m00s  # Field centre (pointing centre if mosaic=False otherwise mosaic centre)
-total_time_on_source  = 200                       # Total time on source in hours
-mosaic                = True                      # Make a mosaic
+total_time_on_source  = 200                   # Total time on source in hours
+mosaic                = True                  # Make a mosaic
 mosaic_area           = 2deg,2deg             # Mosaic area     
-mosaic_filling_factor = 0.6                       # Filling factor for mosaic (increase if want non-uniform sensitivity)
+mosaic_filling_factor = 0.6                   # Filling factor for mosaic (increase if want non-uniform sensitivity)
 
 ###-----------------###
 ###     Imaging     ###
 ###-----------------###
-size   = 2048, 2048
+size   = 2048
 weight = natural
