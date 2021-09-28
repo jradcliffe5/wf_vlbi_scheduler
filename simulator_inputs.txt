@@ -7,7 +7,7 @@
 
 CASA_exec    = singularity exec /idia/software/containers/casa-6.3.simg python
 wsclean_exec = singularity exec /idia/software/containers/wsclean-gpu.simg wsclean
-stimela_exec = ../STIMELA_SINGULARITY_IMAGES/stimela_simms_1.2.0.img python
+stimela_exec = ../../STIMELA_SINGULARITY_IMAGES/stimela_simms_1.2.0.img python
 rms_exec     = 
 output_path  = ./
 
@@ -29,7 +29,7 @@ email_progress    =  jack.f.radcliffe@gmail.com
 ### Array set-up ###
 ###--------------###
 
-antennae  = ["Ef","Jb1","Tm65","W1","On","Tr","Sv","Bd","Zc","Ur","Da","Kn","Pi","De"]        # List of antennae (uses same codenames as the EVN calculator)
+antennae  = ["Ef","Jb1","Tm65","W1","On","Tr","Sv","Bd","Zc","Ur","Da","Kn","Pi","Deg"]        # List of antennae (uses same codenames as the EVN calculator)
 data_rate = 2048                # Data-rate in Mbit/s
 npols     = 4                   # Number of polarisations
 obs_freq  = 1.5                 # Central observing frequency (in GHz)
