@@ -36,7 +36,7 @@ def write_hpc_headers(step,params):
 	print(params)
 	hpc_opts = {}
 	hpc_opts['job_manager'] = params['job_manager']
-	hpc_opts['job_name'] = 'vlbisched_%s'%step
+	hpc_opts['job_name'] = 'vlbisim_%s'%step
 	hpc_opts['email_progress'] = params["email_progress"] 
 	hpc_opts['hpc_account'] = params['HPC_project_code']
 	hpc_opts['error'] = step
@@ -60,7 +60,7 @@ def write_hpc_headers(step,params):
 					 'job_name'      :'#SBATCH -J %s'%hpc_opts['job_name'],
 					 'hpc_account'   :'#SBATCH --account %s'%hpc_opts['hpc_account'],
 					 'email_progress':'#SBATCH --mail-type=BEGIN,END,FAIL\n#SBATCH --mail-user=%s'%hpc_opts['email_progress'],
-					 'error':'#SBATCH -o logs/%s.sh.stdout.log\n#SBATCH -e logs/%s.sh.stderr.log'%(hpc_opts['error'],hpc_opts['error'])
+					 'error':'#SBATCH -o %s%s.sh.stdout.log\n#SBATCH -e %s%s.sh.stderr.log'%(params['output_path'],hpc_opts['error'],params['output_path'],hpc_opts['error'])
 					},
 				'pbs':{
 					 'partition'     :'#PBS -q %s'%hpc_opts['partition'],
@@ -72,7 +72,7 @@ def write_hpc_headers(step,params):
 					 'job_name'      :'#PBS -N %s'%hpc_opts['job_name'],
 					 'hpc_account'   :'#PBS -P %s'%hpc_opts['hpc_account'],
 					 'email_progress':'#PBS -m abe -M %s'%hpc_opts['email_progress'],
-					 'error':'#PBS -o logs/%s.sh.stdout.log\n#PBS -e logs/%s.sh.stderr.log'%(hpc_opts['error'],hpc_opts['error'])
+					 'error':'#PBS -o %s%s.sh.stdout.log\n#PBS -e %s%s.sh.stderr.log'%(params['output_path'],hpc_opts['error'],params['output_path'],hpc_opts['error'])
 					},
 				'bash':{
 					 'partition'     :'',
@@ -90,16 +90,16 @@ def write_hpc_headers(step,params):
 
 	hpc_header= ['#!/bin/bash']
 
-	if step == 'run_mosaic_sims':
-		file = open("%s/target_files.txt"%params['global']['cwd'], "r")
+	if step == 'mosaic':
+		file = open("%s/mosaic.csv"%params['output_path'], "r")
 		nonempty_lines = [line.strip("\n") for line in file if line != "\n"]
 		line_count = len(nonempty_lines)
 		file.close()
-		if params[step]['hpc_options']['max_jobs'] == -1:
+		if params['max_jobs'] == -1:
 			tasks = '0-'+str(line_count-1)
 		else:
-			if (line_count-1) > params[step]['hpc_options']['max_jobs']:
-				tasks = '0-'+str(line_count-1)+'%'+str(params[step]['hpc_options']['max_jobs'])
+			if (line_count-1) > params['max_jobs']:
+				tasks = '0-'+str(line_count-1)+'%'+str(params['max_jobs'])
 			else:
 				tasks = '0-'+str(line_count-1)
 		hpc_dict['slurm']['array_job'] = '#SBATCH --array='+tasks

@@ -31,6 +31,8 @@ params['nodetype'] = str(inputs['nodetype'])
 params['nodes'] = int(inputs['nodes'])
 params['cpus'] = int(inputs['cpus'])
 params['mpiprocs'] = int(inputs['mpiprocs'])
+params['output_path'] = inputs['output_path']
+params['max_jobs'] = int(inputs['max_jobs'])
 
 ## Set the parameters for software
 print(inputs['CASA_exec'])
@@ -72,6 +74,7 @@ if inputs['mosaic'] == "False":
 else:
 	commands.append('%s simulations/fit_pb.py'%(inputs['CASA_exec']))
 	commands.append('%s simulations/generate_mosaic_pointings.py'%(inputs['CASA_exec']))
+	commands.append('%s simulations/make_measurement_set.py mosaic simulator_inputs.txt'%(inputs['stimela_exec']))
 
 with open('job_%s.%s'%(step,params['job_manager']), 'a') as filehandle:
 	for listitem in commands:
