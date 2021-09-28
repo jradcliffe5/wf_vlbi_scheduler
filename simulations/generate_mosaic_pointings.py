@@ -14,6 +14,8 @@ import astropy.units as u
 from astropy.io import fits
 from matplotlib.colors import SymLogNorm
 import pandas as pd
+import matplotlib
+matplotlib.use('Agg')
 from simulator_functions import *
 
 inputs = headless('simulator_inputs.txt') ## replace with sys.argv

@@ -62,7 +62,7 @@ commands.append('%s simulations/add_noise_hetero.py %s/single_pointing.ms %d'%(i
 commands.append('%s simulations/generate_pb_aterms.py %s/single_pointing.ms 0 0 0'%(inputs['CASA_exec'],inputs['output_path']))
 
 ## Unzip a terms
-commands.append('gunzip %s/single_pointing.ms_pb_flat_norotate.fits.gz'%(inputs['output_path']))
+commands.append('gunzip -f %s/single_pointing.ms_pb_flat_norotate.fits.gz'%(inputs['output_path']))
 
 ## Wsclean primary beam
 commands.append('%s -name %s/single_pointing -no-update-model-required --aterm-kernel-size 157 -weight %s -scale 1asec -niter 1 -mgain 0.9 -auto-threshold 0.5 -auto-mask 4 -use-idg -idg-mode hybrid -aterm-config single_pointing.ms_aterm_norotate_config.txt -size %d %d %s/single_pointing.ms'%(inputs['wsclean_exec'],inputs['output_path'],inputs['weight'],int(inputs['size']),int(inputs['size']),inputs['output_path']))
