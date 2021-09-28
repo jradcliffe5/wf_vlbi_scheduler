@@ -15,14 +15,15 @@ output_path  = ./
 ###    HPC options    ###
 ###-------------------###
 
-job_manager       =  bash
-HPC_project_code  =  ASTR1313
+job_manager       =  slurm
+HPC_project_code  =  
 partition         =  GPU
 walltime          =  10:00:00
-nodes             =     2
+nodes             =     1
 cpus              =    24
 mpiprocs          =    24
 nodetype          =  haswell_reg
+max_jobs          =    -1
 email_progress    =  jack.f.radcliffe@gmail.com
 
 ###--------------###
