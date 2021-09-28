@@ -211,35 +211,6 @@ def convert_frac_to_float(frac_str):
 		frac = float(num) / float(denom)
 		return whole - frac if whole < 0 else whole + frac
 
-def headless(inputfile):
-	''' Parse the list of inputs given in the specified file. (Modified from evn_funcs.py)'''
-	INPUTFILE = open(inputfile, "r")
-	control = {}
-	# a few useful regular expressions
-	newline = re.compile(r'\n')
-	space = re.compile(r'\s')
-	char = re.compile(r'\w')
-	comment = re.compile(r'#.*')
-	# parse the input file assuming '=' is used to separate names from values
-	for line in INPUTFILE:
-		if char.match(line):
-			line = comment.sub(r'', line)
-			line = line.replace("'", '')
-			(param, value) = line.split('=')
-			param = newline.sub(r'', param)
-			param = param.strip()
-			param = space.sub(r'', param)
-			value = newline.sub(r'', value)
-			value = value.strip()
-			valuelist = value.split(',')
-			if len(valuelist) == 1:
-				if valuelist[0] == '0' or valuelist[0]=='1' or valuelist[0]=='2':
-					control[param] = int(valuelist[0])
-				else:
-					control[param] = str(valuelist[0])
-			else:
-				control[param] = ','.join(valuelist)
-	return control
 # In[12]:
 
 
