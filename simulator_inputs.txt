@@ -1,0 +1,51 @@
+## Inputs to run the simulator w/ realistic EVN beams
+
+###--------------------###
+### Software and paths ###
+###--------------------###
+# Executable locations (you need stimela, CASA 6+, wsclean with the IDG libraries installed, & BANE)
+
+CASA_exec    = python
+wsclean_exec = singularity exec /idia/software/containers/wsclean-gpu.simg wsclean
+stimela_exec = ../STIMELA_SINGULARITY_IMAGES/stimela_simms_1.2.0.img python
+rms_exec     = 
+output_path  = ./
+
+###-------------------###
+###    HPC options    ###
+###-------------------###
+
+job_manager       =  bash
+HPC_project_code  =  ASTR1313
+partition         =  GPU
+walltime          =  10:00:00
+nodes             =     2
+cpus              =    24
+mpiprocs          =    24
+nodetype          =  haswell_reg
+email_progress    =  jack.f.radcliffe@gmail.com
+
+###--------------###
+### Array set-up ###
+###--------------###
+
+antennae  = ["Ef","Jb1"]        # List of antennae (uses same codenames as the EVN calculator)
+data_rate = 2048                # Data-rate in Mbit/s
+npols = 4                       # Number of polarisations
+obs_freq  = 1.5                 # Central observing frequency (in GHz)
+
+
+###-----------------------------###
+###      Observing scheme       ###
+###-----------------------------###
+field_centre          = 12h36m42s, 60d00m00s  # Field centre (pointing centre if mosaic=False otherwise mosaic centre)
+total_time_on_source  = 200                       # Total time on source in hours
+mosaic                = True                      # Make a mosaic
+mosaic_area           = 2deg,2deg             # Mosaic area     
+mosaic_filling_factor = 0.6                       # Filling factor for mosaic (increase if want non-uniform sensitivity)
+
+###-----------------###
+###     Imaging     ###
+###-----------------###
+size   = 2048, 2048
+weight = natural
