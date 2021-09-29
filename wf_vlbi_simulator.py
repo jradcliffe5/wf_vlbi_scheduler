@@ -99,7 +99,7 @@ if part==2:
 		commands.append('%s simulations/generate_pb_aterms.py ${array[$a]} 0 0 0'%(inputs['CASA_exec']))
 
 		## Unzip a terms
-		commands.append('gunzip -f ${array[$a]}"_pb_flat_norotate.fits.gz')
+		commands.append('gunzip -f ${array[$a]}\"_pb_flat_norotate.fits.gz\"')
 
 		## Make images
 		commands.append('%s -name %s/${array[$a]}_IM -no-update-model-required --aterm-kernel-size 157 -weight %s -scale 1asec -niter 1 -mgain 0.9 -auto-threshold 0.5 -auto-mask 4 -use-idg -idg-mode hybrid -aterm-config ${array[$a]}_aterm_norotate_config.txt -size %d %d ${array[$a]}'%(inputs['wsclean_exec'],inputs['output_path'],inputs['weight'],int(inputs['size']),int(inputs['size'])))
@@ -110,7 +110,17 @@ if part==2:
 		with open('job_%s.%s'%(step,params['job_manager']), 'a') as filehandle:
 			for listitem in commands:
 				filehandle.write('%s\n' % listitem)
+		
+		commands = []
+		step = 'make_image'
+		write_hpc_headers(step,params)
 
+		## Make mosaic
+		commands.append('%s make_mosaic.py'%inputs['CASA_exec'])
+
+		with open('job_%s.%s'%(step,params['job_manager']), 'a') as filehandle:
+			for listitem in commands:
+				filehandle.write('%s\n' % listitem)
 	'''
 	array=(mosaic_ms/*.ms)
 	len=${#array[@]}
