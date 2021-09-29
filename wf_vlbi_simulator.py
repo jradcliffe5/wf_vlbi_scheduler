@@ -72,7 +72,7 @@ if part == 1:
 	commands.append('%s -name %s/single_pointing -no-update-model-required --aterm-kernel-size 157 -weight %s -scale 1asec -niter 1 -mgain 0.9 -auto-threshold 0.5 -auto-mask 4 -use-idg -idg-mode hybrid -aterm-config single_pointing.ms_aterm_norotate_config.txt -size %d %d %s/single_pointing.ms'%(inputs['wsclean_exec'],inputs['output_path'],inputs['weight'],int(inputs['size']),int(inputs['size']),inputs['output_path']))
 
 	if inputs['mosaic'] == "False":
-		commands.append('%s single_pointing-image-pb.fits'%(inputs['rms_exec']))
+		commands.append('%s %s/single_pointing-image-pb.fits'%(inputs['rms_exec'],inputs['output_path']))
 	else:
 		commands.append('%s simulations/fit_pb.py'%(inputs['CASA_exec']))
 		commands.append('%s simulations/generate_mosaic_pointings.py'%(inputs['CASA_exec']))
@@ -105,7 +105,7 @@ if part==2:
 		commands.append('%s -name %s/${array[$a]}_IM -no-update-model-required --aterm-kernel-size 157 -weight %s -scale 1asec -niter 1 -mgain 0.9 -auto-threshold 0.5 -auto-mask 4 -use-idg -idg-mode hybrid -aterm-config ${array[$a]}_aterm_norotate_config.txt -size %d %d ${array[$a]}'%(inputs['wsclean_exec'],inputs['output_path'],inputs['weight'],int(inputs['size']),int(inputs['size'])))
 
 		## Convert to casa ims
-		commands.append('%s convert_fits_to_casa.py ${array[$a]}'%inputs['CASA_exec'])
+		commands.append('%s simulations/convert_fits_to_casa.py ${array[$a]}'%inputs['CASA_exec'])
 
 		with open('job_%s.%s'%(step,params['job_manager']), 'a') as filehandle:
 			for listitem in commands:
@@ -117,6 +117,9 @@ if part==2:
 
 		## Make mosaic
 		commands.append('%s make_mosaic.py'%inputs['CASA_exec'])
+
+		## Make rms map
+		commands.append('%s %s/mosaic.linmos.fits'%(inputs['rms_exec'],inputs['output_path']))
 
 		with open('job_%s.%s'%(step,params['job_manager']), 'a') as filehandle:
 			for listitem in commands:
