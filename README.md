@@ -1,5 +1,7 @@
 # Wide-field VLBI scheduler
 
+[![DOI](https://zenodo.org/badge/201935735.svg)](https://zenodo.org/badge/latestdoi/201935735)
+
 This code generates the phase centres for wide-field VLBI correlation. The code can also generate expected simulated data sets and sensitivity maps using realistic EVN primary beams. The code has been tested for the SPARCS (Njeri+in prep.) and COSMOS projects (Radcliffe+in prep.). The final version shall have capabilities to cover an entire area but currently only takes an input catalogue and outputs a VEX format that's suitable format for correlators.
 
 
