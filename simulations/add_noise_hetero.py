@@ -45,7 +45,7 @@ def calc_sefd(sefd1,sefd2,tint,dnu,sampeff):
 	#return(sefd_a)
 	return (1./(float(sampeff)))*(sefd_a)*(1./(np.sqrt(tint*dnu)))
 
-def add_noise(msfile,datacolumn,evn_SEFD):
+def add_noise(msfile,datacolumn,evn_SEFD,adjust_time=1.0):
 	tb = casatools.table()
 	qa = casatools.quanta()
 	me = casatools.measures()
@@ -62,6 +62,9 @@ def add_noise(msfile,datacolumn,evn_SEFD):
 	antenna2 = tb.getcol('ANTENNA2')
 	tint = np.average(tb.getcol('EXPOSURE'))
 	tb.close()
+	
+	if adjust_time!=1.0:
+		tint=tint*adjust_time
 
 	tb.open('%s/SPECTRAL_WINDOW'%msfile, nomodify=True)
 	chan_width=np.average(tb.getcol('CHAN_WIDTH'))
@@ -480,10 +483,29 @@ evn_SEFD = {'Ef':[19,76],
 			'De':[350,25],
 			'Jb2':[300,25]}
 
+evn_SEFD = {'Jb1':[40,67],
+			'Cm':[220,32],
+			'Da':[300,25],
+			'Kn':[300,25],
+			'Pi':[300,25],
+			'Jb2':[250,25],
+			'Gh':[250,29],
+			'Ef':[19,76],
+			'Tm65':[48,65],
+			'W1':[1680,25],
+			'On':[1000,25],
+			'Mc':[320,32],
+			'Sv':[200,32],
+			'Bd':[200,32],
+			'Zc':[200,32],
+			'Ur':[480,25],
+			'Ys':[200,25]}
+
 ms = sys.argv[1]
 imsize = int(sys.argv[2])
+adjust_time = float(sys.argv[3])
 
-cell = '1arcsec'
+cell = '0.001arcsec'
 print('Clearing cal')
 clearcal(vis=ms)
 print('Write flag')
@@ -491,7 +513,7 @@ write_flag(ms,0,check_elevation(ms,custom_xyz=True),make_baseline_dictionary(ms)
 print('Match antennae')
 sefd_ants, diams_ants = match_to_antenna_nos(evn_SEFD,ms)
 print('Add noise')
-add_noise(msfile=ms,datacolumn='CORRECTED_DATA',evn_SEFD=sefd_ants)
+add_noise(msfile=ms,datacolumn='CORRECTED_DATA',evn_SEFD=sefd_ants,adjust_time=adjust_time)
 
 
 os.system('rm -r %s_IM.*'%ms.split('.ms')[0])

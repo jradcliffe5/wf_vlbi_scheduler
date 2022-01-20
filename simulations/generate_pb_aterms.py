@@ -222,6 +222,14 @@ evn_SEFD = {'Ef':[19,76],
 			'De':[350,25],
 			'Jb2':[300,25]}
 
+evn_SEFD = {'Jb1':[40,67],
+			'Cm':[220,32],
+			'Da':[300,25],
+			'Kn':[300,25],
+			'Pi':[300,25],
+			'Jb2':[250,25],
+			'Gh':[250,29]}
+
 if int(sys.argv[3]) == 1:
 	if os.path.exists('../D_eff_errs.pkl'):
 		infile = open('../D_eff_errs.pkl','rb')

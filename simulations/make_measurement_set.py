@@ -26,13 +26,21 @@ if npols >=2.:
 else:
 	bit = 1.
 	stokes = 'RR'
-bw = data_rate/bit/4.
+try: 
+	bw = float(inputs['bandwidth'])
+except:
+	bw = data_rate/bit/4.
 freq0 = float(inputs['obs_freq'])-(bw/2000.)
 
 if inputs['mosaic'] == "True":
 	tos = 12
 else:
 	tos = float(inputs['total_time_on_source'])
+	
+if str(inputs['wide_field_ITRF']) == 'True':
+	itrf="%s/vlapos_sims.itrf"%output
+else:
+	itrf="%s/sims.itrf"%output
 
 pointing_centre = ast.literal_eval(inputs['field_centre'])
 
@@ -43,7 +51,7 @@ if sys.argv[1] == 'single':
 	msname=MS,
 	label=None,
 	tel="EVN",
-	pos="%s/vlapos_sims.itrf"%output,
+	pos=itrf,
 	pos_type='ascii',
 	ra=pointing_centre[0],
 	dec=pointing_centre[1],
@@ -51,8 +59,8 @@ if sys.argv[1] == 'single':
 	scan_length=[1],
 	dtime=10,
 	freq0="%.8fGHz"%freq0,#1536000000.0,
-	dfreq="%.8fMHz"%(bw/32.),
-	nchan="32",
+	dfreq="%.8fMHz"%(bw/640.),
+	nchan="640",
 	stokes=stokes,
 	setlimits=False,
 	elevation_limit=0,
@@ -88,7 +96,7 @@ elif sys.argv[1] == 'mosaic':
 		msname=MS,
 		label=None,
 		tel="EVN",
-		pos="%s/vlapos_sims.itrf"%output,
+		pos=itrf,
 		pos_type='ascii',
 		ra=direction[i][0],
 		dec=direction[i][1],

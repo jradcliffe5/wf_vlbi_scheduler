@@ -15,7 +15,7 @@ output_path  = ./
 ###    HPC options    ###
 ###-------------------###
 
-job_manager       =  bash
+job_manager       =  slurm
 HPC_project_code  =  
 partition         =  GPU
 walltime          =  10:00:00
@@ -30,18 +30,21 @@ email_progress    =  jack.f.radcliffe@gmail.com
 ### Array set-up ###
 ###--------------###
 
-antennae  = ["Ef","Jb1","Tm65","W1","On","Tr","Sv","Bd","Zc","Ur","Da","Kn","Pi","De"]        # List of antennae (uses same codenames as the EVN calculator)
-data_rate = 2048                # Data-rate in Mbit/s
-npols     = 4                   # Number of polarisations
-obs_freq  = 1.5                 # Central observing frequency (in GHz)
+antennae  = ["Jb2","Da","Kn","Pi","Cm","Gh"]  # List of antennae (uses same codenames as the EVN calculator)
+data_rate = 2048                        # Data-rate in Mbit/s
+bandwidth =                         # Bandwidth in MHz (if set, it will override data_rate)
+npols     = 4                           # Number of polarisations
+obs_freq  = 12                          # Central observing frequency (in GHz)
+wide_field_ITRF = False                 # Use compact array config to reduce image size needed
 
 
 ###-----------------------------###
 ###      Observing scheme       ###
 ###-----------------------------###
 field_centre          = ["12h36m42s", "60d00m00s"] # Field centre (pointing centre if mosaic=False otherwise mosaic centre)
-total_time_on_source  = 200                        # Total time on source in hours
-mosaic                = True                       # Make a mosaic
+total_time_on_source  = 24                         # Total time on source in hours
+time_multiplier       = 1                          # Do adhoc multiplication to adjust SEFD to sim time w/o large data
+mosaic                = False                      # Make a mosaic
 mosaic_area           = [2,2]                      # Mosaic area in degrees    
 mosaic_filling_factor = 2.0                        # Filling factor for mosaic (increase if want non-uniform sensitivity)
 
@@ -49,4 +52,5 @@ mosaic_filling_factor = 2.0                        # Filling factor for mosaic (
 ###     Imaging     ###
 ###-----------------###
 size   = 2048
+cell   = 0.005arcsec
 weight = natural
