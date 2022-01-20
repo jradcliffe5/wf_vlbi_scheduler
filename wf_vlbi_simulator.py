@@ -52,7 +52,7 @@ if part == 1:
 	commands.append('%s simulations/make_measurement_set.py single simulator_inputs.txt'%(inputs['stimela_exec']))
 
 	## Add noise to measurement sets & flag
-	commands.append('%s simulations/add_noise_hetero.py %s/single_pointing.ms %d'%(inputs['CASA_exec'],inputs['output_path'],int(inputs['size'])))
+	commands.append('%s simulations/add_noise_hetero.py %s/single_pointing.ms %d %.3f'%(inputs['CASA_exec'],inputs['output_path'],int(inputs['size']),float(inputs['time_multiplier'])))
 
 	## Generate a terms
 	commands.append('%s simulations/generate_pb_aterms.py %s/single_pointing.ms 0 0 0'%(inputs['CASA_exec'],inputs['output_path']))
@@ -61,7 +61,7 @@ if part == 1:
 	commands.append('gunzip -f %s/single_pointing.ms_pb_flat_norotate.fits.gz'%(inputs['output_path']))
 
 	## Wsclean primary beam
-	commands.append('%s -name %s/single_pointing -no-update-model-required --aterm-kernel-size 157 -weight %s -scale 1asec -niter 1 -mgain 0.9 -auto-threshold 0.5 -auto-mask 4 -use-idg -idg-mode hybrid -aterm-config single_pointing.ms_aterm_norotate_config.txt -size %d %d %s/single_pointing.ms'%(inputs['wsclean_exec'],inputs['output_path'],inputs['weight'],int(inputs['size']),int(inputs['size']),inputs['output_path']))
+	commands.append('%s -name %s/single_pointing -no-update-model-required --aterm-kernel-size 157 -weight %s -scale %s -niter 1 -mgain 0.9 -auto-threshold 0.5 -auto-mask 4 -use-idg -idg-mode hybrid -aterm-config single_pointing.ms_aterm_norotate_config.txt -size %d %d %s/single_pointing.ms'%(inputs['wsclean_exec'],inputs['output_path'],inputs['weight'],inputs['cell'],int(inputs['size']),int(inputs['size']),inputs['output_path']))
 
 	if inputs['mosaic'] == "False":
 		commands.append('%s %s/single_pointing-image-pb.fits'%(inputs['rms_exec'],inputs['output_path']))
@@ -85,7 +85,7 @@ if part==2:
 		commands.append('a=$SLURM_ARRAY_TASK_ID')
 
 		## Add noise to all ms
-		commands.append('%s simulations/add_noise_hetero.py ${array[$a]} %d'%(inputs['CASA_exec'],int(inputs['size'])))
+		commands.append('%s simulations/add_noise_hetero.py ${array[$a]} %d %.3f'%(inputs['CASA_exec'],int(inputs['size']),float(inputs['time_multiplier'])))
 
 		## Make all a terms
 		commands.append('%s simulations/generate_pb_aterms.py ${array[$a]} 0 0 0'%(inputs['CASA_exec']))
@@ -94,7 +94,7 @@ if part==2:
 		commands.append('gunzip -f ${array[$a]}\"_pb_flat_norotate.fits.gz\"')
 
 		## Make images
-		commands.append('%s -name %s/${array[$a]}_IM -no-update-model-required --aterm-kernel-size 157 -weight %s -scale 1asec -niter 1 -mgain 0.9 -auto-threshold 0.5 -auto-mask 4 -use-idg -idg-mode hybrid -aterm-config ${array[$a]}_aterm_norotate_config.txt -size %d %d ${array[$a]}'%(inputs['wsclean_exec'],inputs['output_path'],inputs['weight'],int(inputs['size']),int(inputs['size'])))
+		commands.append('%s -name %s/${array[$a]}_IM -no-update-model-required --aterm-kernel-size 157 -weight %s -scale %s -niter 1 -mgain 0.9 -auto-threshold 0.5 -auto-mask 4 -use-idg -idg-mode hybrid -aterm-config ${array[$a]}_aterm_norotate_config.txt -size %d %d ${array[$a]}'%(inputs['wsclean_exec'],inputs['output_path'],inputs['weight'],inputs['cell'],int(inputs['size']),int(inputs['size'])))
 
 		## Convert to casa ims
 		commands.append('%s simulations/convert_fits_to_casa.py ${array[$a]}'%inputs['CASA_exec'])
