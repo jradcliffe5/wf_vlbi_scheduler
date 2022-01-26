@@ -465,55 +465,67 @@ def add_pt_src(msfile,pt_flux):
 	#uvsub(vis=msfile,reverse=True)
 	os.system('rm -r %s.cl'%msfile)
 
-evn_SEFD = {'Ef':[19,76],
-			'Tm65':[39,65],
-			'Jb1':[40,67],
-			'W1':[560,25],
-			'On':[350,25],
-			'Mc':[700,32],
-			'Tr':[300,32],
-			'Sv':[360,32],
-			'Bd':[330,32],
-			'Zc':[300,32],
-			'Ur':[300,25],
-			'Cm':[175,32],
-			'Da':[450,25],
-			'Kn':[400,25],
-			'Pi':[450,25],
-			'De':[350,25],
-			'Jb2':[300,25]}
 
-evn_SEFD = {'Jb1':[40,67],
-			'Cm':[220,32],
-			'Da':[300,25],
-			'Kn':[300,25],
-			'Pi':[300,25],
-			'Jb2':[250,25],
-			'Gh':[250,29],
-			'Ef':[19,76],
-			'Tm65':[48,65],
-			'W1':[1680,25],
-			'On':[1000,25],
-			'Mc':[320,32],
-			'Sv':[200,32],
-			'Bd':[200,32],
-			'Zc':[200,32],
-			'Ur':[480,25],
-			'Ys':[200,25]}
+evn_SEFD = {'L':{
+				'Ef':[19,76],
+				'Tm65':[39,65],
+				'Jb1':[40,67],
+				'W1':[560,25],
+				'On':[350,25],
+				'Mc':[700,32],
+				'Tr':[300,32],
+				'Nt':[740,25],
+				'Sv':[360,32],
+				'Bd':[330,32],
+				'Zc':[300,32],
+				'Ur':[300,25],
+				'Cm':[175,32],
+				'Da':[450,25],
+				'Kn':[400,25],
+				'Pi':[450,25],
+				'De':[350,25],
+				'Sh':[670,25],
+				'Ir':[3600,25],
+				'Jb2':[300,25],
+				'Ys':[160,25]},
+			'C':{'Ef':[20,76],
+				'Tm65':[39,65],
+				'Jb1':[40,67],
+				'W1':[840,25],
+				'On':[600,25],
+				'Mc':[170,32],
+				'Tr':[220,32],
+				'Nt':[260,25],
+				'Sv':[250,32],
+				'Bd':[200,32],
+				'Zc':[400,32],
+				'Ur':[200,25],
+				'Cm':[136,32],
+				'Da':[325,25],
+				'Kn':[325,25],
+				'Pi':[325,25],
+				'De':[1000,25],
+				'Sh':[720,25],
+				'Ir':[430,25],
+				'Jb2':[320,25],
+				'Ys':[160,25]}
+			}
 
 ms = sys.argv[1]
 imsize = int(sys.argv[2])
 adjust_time = float(sys.argv[3])
+band=str(sys.argv[4])
 
-cell = '0.001arcsec'
+cell = str(sys.argv[5])
 print('Clearing cal')
 clearcal(vis=ms)
 print('Write flag')
 write_flag(ms,0,check_elevation(ms,custom_xyz=True),make_baseline_dictionary(ms))
 print('Match antennae')
-sefd_ants, diams_ants = match_to_antenna_nos(evn_SEFD,ms)
+sefd_ants, diams_ants = match_to_antenna_nos(evn_SEFD[band],ms)
 print('Add noise')
 add_noise(msfile=ms,datacolumn='CORRECTED_DATA',evn_SEFD=sefd_ants,adjust_time=adjust_time)
+print('Flag e-MERLIN')
 
 
 os.system('rm -r %s_IM.*'%ms.split('.ms')[0])
@@ -525,4 +537,5 @@ tclean(vis=ms,
 	   niter=int(1e5),
 	   nsigma=1.2,
 	   usemask='user',
+           pblimit=1e-10,
 	   mask='circle[[%dpix, %dpix], 5pix]'%(imsize/2.,imsize/2.))

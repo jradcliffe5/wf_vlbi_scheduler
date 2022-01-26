@@ -33,16 +33,32 @@ params['nodes'] = int(inputs['nodes'])
 params['cpus'] = int(inputs['cpus'])
 params['mpiprocs'] = int(inputs['mpiprocs'])
 params['output_path'] = inputs['output_path']
+params['mem'] = inputs['mem']
 params['max_jobs'] = int(inputs['max_jobs'])
 
 ## Set the parameters for software
 print(inputs['CASA_exec'])
+
+obs_freq = float(inputs['obs_freq'])
+
+if (obs_freq > 1.0) & (obs_freq < 2.0):
+	band='L'
+elif (obs_freq > 2.0) & (obs_freq < 3.5):
+	band='S'
+elif (obs_freq > 3.5) & (obs_freq < 7.5):
+	band='C'
+elif (obs_freq > 7.5):
+	band='K'
+else:
+	print('band not supported')
+	sys.exit()
 
 ## Generate single pointing to fit beam
 if part == 1:
 	commands = []
 	step = 'single_pointing'
 	write_hpc_headers(step,params)
+	#commands.append('module purge singularity')
 
 	## Generate itrfs
 	antennae = ast.literal_eval(inputs['antennae'])
@@ -52,10 +68,10 @@ if part == 1:
 	commands.append('%s simulations/make_measurement_set.py single simulator_inputs.txt'%(inputs['stimela_exec']))
 
 	## Add noise to measurement sets & flag
-	commands.append('%s simulations/add_noise_hetero.py %s/single_pointing.ms %d %.3f'%(inputs['CASA_exec'],inputs['output_path'],int(inputs['size']),float(inputs['time_multiplier'])))
+	commands.append('%s simulations/add_noise_hetero.py %s/single_pointing.ms %d %.3f %s %s'%(inputs['CASA_exec'],inputs['output_path'],int(inputs['size']),float(inputs['time_multiplier']),band,inputs['cell']))
 
 	## Generate a terms
-	commands.append('%s simulations/generate_pb_aterms.py %s/single_pointing.ms 0 0 0'%(inputs['CASA_exec'],inputs['output_path']))
+	commands.append('%s simulations/generate_pb_aterms.py %s/single_pointing.ms 0 0 0 %s'%(inputs['CASA_exec'],inputs['output_path'],band))
 
 	## Unzip a terms
 	commands.append('gunzip -f %s/single_pointing.ms_pb_flat_norotate.fits.gz'%(inputs['output_path']))
@@ -83,7 +99,6 @@ if part==2:
 		commands.append('array=(%s/mosaic_*.ms)'%inputs['output_path'])
 		commands.append('len=${#array[@]}')
 		commands.append('a=$SLURM_ARRAY_TASK_ID')
-
 		## Add noise to all ms
 		commands.append('%s simulations/add_noise_hetero.py ${array[$a]} %d %.3f'%(inputs['CASA_exec'],int(inputs['size']),float(inputs['time_multiplier'])))
 

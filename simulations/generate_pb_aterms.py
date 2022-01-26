@@ -204,31 +204,52 @@ def rescale_synthetic_HPBW(header,c_freq,diameter,vmodel,a_term_upscale,phase_ce
 		hc = hdu_cut.data.shape
 		return hdu_cut.data[int(hc[0]/2),int(hc[1]/2)]
 
-evn_SEFD = {'Ef':[19,76],
-			'Tm65':[39,65],
-			'Jb1':[40,67],
-			'W1':[560,25],
-			'On':[350,25],
-			'Mc':[700,32],
-			'Tr':[300,32],
-			'Sv':[360,32],
-			'Bd':[330,32],
-			'Zc':[300,32],
-			'Ur':[300,25],
-			'Cm':[175,32],
-			'Da':[450,25],
-			'Kn':[400,25],
-			'Pi':[450,25],
-			'De':[350,25],
-			'Jb2':[300,25]}
 
-evn_SEFD = {'Jb1':[40,67],
-			'Cm':[220,32],
-			'Da':[300,25],
-			'Kn':[300,25],
-			'Pi':[300,25],
-			'Jb2':[250,25],
-			'Gh':[250,29]}
+
+evn_SEFD = {'L':{
+				'Ef':[19,76],
+				'Tm65':[39,65],
+				'Jb1':[40,67],
+				'W1':[560,25],
+				'On':[350,25],
+				'Mc':[700,32],
+				'Tr':[300,32],
+				'Nt':[740,25],
+				'Sv':[360,32],
+				'Bd':[330,32],
+				'Zc':[300,32],
+				'Ur':[300,25],
+				'Cm':[175,32],
+				'Da':[450,25],
+				'Kn':[400,25],
+				'Pi':[450,25],
+				'De':[350,25],
+				'Sh':[670,25],
+				'Ir':[3600,25],
+				'Jb2':[300,25],
+				'Ys':[160,25]},
+			'C':{'Ef':[20,76],
+				'Tm65':[39,65],
+				'Jb1':[40,67],
+				'W1':[840,25],
+				'On':[600,25],
+				'Mc':[170,32],
+				'Tr':[220,32],
+				'Nt':[260,25],
+				'Sv':[250,32],
+				'Bd':[200,32],
+				'Zc':[400,32],
+				'Ur':[200,25],
+				'Cm':[136,32],
+				'Da':[325,25],
+				'Kn':[325,25],
+				'Pi':[325,25],
+				'De':[1000,25],
+				'Sh':[720,25],
+				'Ir':[430,25],
+				'Jb2':[320,25],
+				'Ys':[160,25]}
+			}
 
 if int(sys.argv[3]) == 1:
 	if os.path.exists('../D_eff_errs.pkl'):
@@ -243,7 +264,7 @@ if int(sys.argv[3]) == 1:
 		outfile.close()
 
 ms = sys.argv[1]
-
+band = str(sys.argv[5])
 if int(sys.argv[2]) == 1:
 	do_all_freqs = True
 else:
@@ -267,7 +288,7 @@ try:
 	diffcorr = False
 except:
 	diffcorr = True
-evn_sefd, evn_diams = match_to_antenna_nos(evn_SEFD,ms)
+evn_sefd, evn_diams = match_to_antenna_nos(evn_SEFD[band],ms)
 nants = len(evn_diams.values())
 
 os.system('rm -r %s.mask'%ms)
@@ -291,6 +312,7 @@ field_dir = tb.getcol('PHASE_DIR').squeeze()
 if same_dist_elems(chan_freq) == True:
 	freq0 = chan_freq[0]
 	chan_width = chan_freq[1]-chan_freq[0]
+	bw = chan_freq[-1]-chan_freq[0] + np.abs(chan_width)
 	freqs = np.linspace(freq0,freq0+((len(chan_freq)-1)*chan_width),len(chan_freq))
 else:
 	sys.exit()
@@ -309,8 +331,8 @@ if do_all_freqs == True:
 	header['CRVAL5']  =   freq0
 	header['CDELT5']  =   chan_width
 else:                                                           
-	header['CRVAL5']  =   1600000000.                                                  
-	header['CDELT5']  =   1024000000.
+	header['CRVAL5']  =   freq0                                                  
+	header['CDELT5']  =   bw
 header['CUNIT5']  = 'Hz      '
 header['CTYPE6']  = 'TIME'
 header['CRPIX6']  =                   1.
@@ -419,9 +441,9 @@ hdu = fits.PrimaryHDU(x,header)
 header = hdu.header
 
 if dont_rotate == True:
-	hdu.writeto('%s_pb_flat_norotate.fits.gz'%(ms),overwrite=True)
+	hdu.writeto('%s_pb_flat_norotate.fits'%(ms),overwrite=True)
 else:
-	hdu.writeto('%s_pb_flat.fits.gz'%(ms),overwrite=True)
+	hdu.writeto('%s_pb_flat.fits'%(ms),overwrite=True)
 
 if dont_rotate == True:
 	preamble = ['# a term corrections', '# This is a test parset, comments are possible like this',

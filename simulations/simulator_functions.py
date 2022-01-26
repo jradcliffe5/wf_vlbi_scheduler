@@ -46,7 +46,7 @@ def write_hpc_headers(step,params):
 	#else:
 		#sys.exit()
 
-	for i in ['partition','walltime','nodetype','nodes','cpus','mpiprocs']:
+	for i in ['partition','walltime','nodetype','nodes','cpus','mpiprocs','mem']:
 		hpc_opts[i] = params['%s'%i]
 
 
@@ -55,6 +55,7 @@ def write_hpc_headers(step,params):
 					 'nodetype'      :'',
 					 'cpus'          :'#SBATCH --tasks-per-node %s'%hpc_opts['cpus'], 
 					 'nodes'         :'#SBATCH -N %s-%s'%(hpc_opts['nodes'],hpc_opts['nodes']),
+					 'mem'           :'#SBATCH --mem=%s'%(hpc_opts['mem']),
 					 'mpiprocs'      :'', 
 					 'walltime'      :'#SBATCH --time=%s'%hpc_opts['walltime'],
 					 'job_name'      :'#SBATCH -J %s'%hpc_opts['job_name'],
@@ -67,6 +68,7 @@ def write_hpc_headers(step,params):
 					 'nodetype'      :'',
 					 'cpus'          :'#PBS -l select=%s:ncpus=%s:mpiprocs=%s:nodetype=%s'%(hpc_opts['nodes'],hpc_opts['cpus'],hpc_opts['mpiprocs'],hpc_opts['nodetype']), 
 					 'nodes'         :'',
+					 'mem'           :'#PBS -l mem=%s'%(hpc_opts['mem']),
 					 'mpiprocs'      :'', 
 					 'walltime'      :'#PBS -l walltime=%s'%hpc_opts['walltime'],
 					 'job_name'      :'#PBS -N %s'%hpc_opts['job_name'],
