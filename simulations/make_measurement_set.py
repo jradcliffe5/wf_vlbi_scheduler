@@ -36,7 +36,7 @@ if inputs['mosaic'] == "True":
 	tos = 12
 else:
 	tos = float(inputs['total_time_on_source'])
-	
+
 if str(inputs['wide_field_ITRF']) == 'True':
 	itrf="%s/vlapos_sims.itrf"%output
 else:
@@ -46,6 +46,7 @@ pointing_centre = ast.literal_eval(inputs['field_centre'])
 
 if sys.argv[1] == 'single':
 	os.system('rm -r %s/single_pointing.ms'%output)
+	tos = np.round(tos,5)
 	MS='%s/single_pointing.ms'%output
 	simms.create_empty_ms(
 	msname=MS,
@@ -56,7 +57,7 @@ if sys.argv[1] == 'single':
 	ra=pointing_centre[0],
 	dec=pointing_centre[1],
 	synthesis=tos,
-	scan_length=[1],
+	scan_length=[tos],
 	dtime=30,
 	freq0="%.8fGHz"%freq0,#1536000000.0,
 	dfreq="%.8fMHz"%(bw/64.),
@@ -87,7 +88,10 @@ elif sys.argv[1] == 'mosaic':
 		if not i.startswith('#'):
 			line = i.split(" ")
 			direction.append([line[2],line[4]])
+	tos = float(inputs['total_time_on_source'])
 	total_time = tos
+	print(total_time, total_time/float(len(direction)) , len(direction))
+	synthesis = np.round(total_time/float(len(direction)),5)
 	for i in range(len(direction)):
 		os.system('rm -r %s/mosaic_%s.ms'%(output,i))
 		dt = datetime.strptime('20 Sep 2021', '%d %b %Y') #+ timedelta(hours=2/60+(0*total_time/float(len(direction))))
@@ -101,8 +105,8 @@ elif sys.argv[1] == 'mosaic':
 		ra=direction[i][0],
 		dec=direction[i][1],
 		direction=None,
-		synthesis=total_time/float(len(direction)),
-		scan_length=[1],
+		synthesis=synthesis,
+		scan_length=[synthesis],
 		dtime=10,
 		freq0="%.8fGHz"%freq0,#1536000000.0,
 		dfreq="%.8fMHz"%(bw/32.),
