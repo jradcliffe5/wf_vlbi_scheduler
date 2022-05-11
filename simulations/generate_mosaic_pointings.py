@@ -211,32 +211,49 @@ def convert_frac_to_float(frac_str):
 
 # In[12]:
 
+ 
+if str(inputs['custom_mosaic']) == '':
+	cm=False
+else:
+	cm=True
 
-pointing_centre = ast.literal_eval(inputs['field_centre'])
-size = ast.literal_eval(inputs['mosaic_area'])
-pb_fwhm = np.load('%s/PB_fit.npy'%(inputs['output_path'])) 
-c = SkyCoord(pointing_centre[0], pointing_centre[1],unit=('hour','deg'))
+if cm == False:
+	pointing_centre = ast.literal_eval(inputs['field_centre'])
+	pb_fwhm = np.load('%s/PB_fit.npy'%(inputs['output_path']))
+	size = ast.literal_eval(inputs['mosaic_area']) 
 
+	c = SkyCoord(pointing_centre[0], pointing_centre[1],unit=('hour','deg'))
 
-# In[15]:
+	coords = mosaic_pointings_square(centre_ra=c.ra.deg,centre_dec=c.dec.deg,ra_fov=size[0]/np.cos(c.dec.rad), dec_fov=size[1],theta=0, pointing_file_path='%s/mosaic.csv'%(inputs['output_path']),pb_fwhm=pb_fwhm,spacing=float(inputs['mosaic_filling_factor']))
 
-
-coords = mosaic_pointings_square(centre_ra=c.ra.deg,centre_dec=c.dec.deg,ra_fov=size[0]/np.cos(c.dec.rad), dec_fov=size[1],theta=0, pointing_file_path='%s/mosaic.csv'%(inputs['output_path']),pb_fwhm=pb_fwhm,spacing=float(inputs['mosaic_filling_factor']))
-
-
-# In[16]:
-
+else:
+	pb_fwhm = 1
+	pointing_file_path='%s/mosaic.csv'%(inputs['output_path'])
+	os.system('rm %s'%pointing_file_path)
+	ptgfile = open(pointing_file_path,'w')
+	with open('%s'%str(inputs['custom_mosaic'])) as f:
+		lines = f.readlines()
+	print('#Epoch     RA   RA_hms       DEC  DEC_dms    RANGE',file=ptgfile)
+	mos_co = []
+	for index in range(0, len(lines)):
+			ra_mosaic_buffer = lines[index].strip('\n').split(' ')
+			c = SkyCoord(ra_mosaic_buffer[0],ra_mosaic_buffer[1],unit=('hour','deg'))
+			tmp_ra = str(c.ra.deg)
+			ra_hms = str(int(c.ra.hms[0])).zfill(2)+'h'+str(int(c.ra.hms[1])).zfill(2)+"m"+str("%.12f"%(c.ra.hms[2])).zfill(15)+"s"
+			tmp_dec = str(c.dec.deg)
+			dec_dms = str(int(c.dec.dms[0])).zfill(2)+'d'+str(int(c.dec.dms[1])).zfill(2)+"m"+str("%.12f"%(c.dec.dms[2])).zfill(15)+"s"
+			ptgstring = 'J2000 '+str(tmp_ra)+' '+ra_hms+' '+str(tmp_dec)+' '+dec_dms+' '+str(pb_fwhm)
+			print(ptgstring, file=ptgfile)
+			mos_co.append([float(tmp_ra),float(tmp_dec)])
+	mos_co = np.array(mos_co)
+	print(mos_co)
+	c = SkyCoord(np.mean(mos_co[:,0]), np.mean(mos_co[:,1]),unit=('deg','deg'))
+	ptgfile.close()
 
 df= pd.read_csv('%s/mosaic.csv'%(inputs['output_path']), delim_whitespace=True)
 
 
-# In[21]:
-
-
 w = generate_central_wcs([c.ra.deg,c.dec.deg],[1/60,1/60],[1,1])
-
-
-# In[24]:
 
 
 fig = plt.figure(1,figsize=(9,9))

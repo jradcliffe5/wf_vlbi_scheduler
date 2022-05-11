@@ -100,10 +100,10 @@ if part==2:
 		commands.append('len=${#array[@]}')
 		commands.append('a=$SLURM_ARRAY_TASK_ID')
 		## Add noise to all ms
-		commands.append('%s simulations/add_noise_hetero.py ${array[$a]} %d %.3f'%(inputs['CASA_exec'],int(inputs['size']),float(inputs['time_multiplier'])))
+		commands.append('%s simulations/add_noise_hetero.py ${array[$a]} %d %.3f %s %s'%(inputs['CASA_exec'],int(inputs['size']),float(inputs['time_multiplier']),band,inputs['cell']))
 
 		## Make all a terms
-		commands.append('%s simulations/generate_pb_aterms.py ${array[$a]} 0 0 0'%(inputs['CASA_exec']))
+		commands.append('%s simulations/generate_pb_aterms.py ${array[$a]} 0 0 0 %s'%(inputs['CASA_exec'],band))
 
 		## Unzip a terms
 		commands.append('gunzip -f ${array[$a]}\"_pb_flat_norotate.fits.gz\"')

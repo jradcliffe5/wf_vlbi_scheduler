@@ -121,7 +121,7 @@ elif sys.argv[1] == 'mosaic':
 		lon_lat=None,
 		noup=False,
 		nbands=1,
-		date="UTC,%s"%dt.strftime('%Y/%m/%d/%H:%M:%S'),
+		date=None,
 		fromknown=False,
 		feed='perfect R L',
 		scan_lag=0,
