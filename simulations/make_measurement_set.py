@@ -91,7 +91,7 @@ elif sys.argv[1] == 'mosaic':
 	tos = float(inputs['total_time_on_source'])
 	total_time = tos
 	print(total_time, total_time/float(len(direction)) , len(direction))
-	synthesis = np.round(total_time/float(len(direction)),5)
+	synthesis = np.round(total_time/float(len(direction)),3)
 	for i in range(len(direction)):
 		os.system('rm -r %s/mosaic_%s.ms'%(output,i))
 		dt = datetime.strptime('20 Sep 2021', '%d %b %Y') #+ timedelta(hours=2/60+(0*total_time/float(len(direction))))
