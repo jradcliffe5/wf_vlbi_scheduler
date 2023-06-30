@@ -1,0 +1,58 @@
+## Inputs to run the simulator w/ realistic EVN beams
+
+###--------------------###
+### Software and paths ###
+###--------------------###
+# Executable locations (you need stimela, CASA 6+, wsclean with the IDG libraries installed, & BANE)
+
+CASA_exec    = singularity exec /idia/software/containers/casa-6.3.simg python
+wsclean_exec = singularity exec /idia/software/containers/wsclean-gpu.simg wsclean
+stimela_exec = /scratch3/users/jradcliffe5/STIMELA_SINGULARITY_IMAGES/stimela_simms_1.2.0.img python
+rms_exec     = singularity exec /idia/software/containers/SF-PY3-bionic-2020-08-14.simg BANE
+output_path  = ./
+
+###-------------------###
+###    HPC options    ###
+###-------------------###
+
+job_manager       =  slurm
+HPC_project_code  =  
+partition         =  GPUV100
+walltime          =  10:00:00
+nodes             =     1
+cpus              =    24
+mpiprocs          =    24
+nodetype          =  haswell_reg
+max_jobs          =    -1
+mem = 50G
+email_progress    =  jack.f.radcliffe@gmail.com
+
+###--------------###
+### Array set-up ###
+###--------------###
+
+antennae  = ["Sc", "Hn", "Nl", "Fd", "La", "Kp", "Pt", "Ov", "Br", "Mk"]  # List of antennae (uses same codenames as the EVN calculator)
+data_rate = 512                     # Data-rate in Mbit/s
+bandwidth =                         # Bandwidth in MHz (if set, it will override data_rate)
+npols     = 4                       # Number of polarisations
+obs_freq  = 1.4                     # Central observing frequency (in GHz)
+wide_field_ITRF = True              # Use compact array config to reduce image size needed
+
+
+###-----------------------------###
+###      Observing scheme       ###
+###-----------------------------###
+field_centre          = ["12h02m21.69803001s", "70d11m56.50964186s"] # Field centre (pointing centre if mosaic=False otherwise mosaic centre)
+total_time_on_source  = 0.9333                     # Total time on source in hours
+time_multiplier       = 1                          # Do adhoc multiplication to adjust SEFD to sim time w/o large data
+mosaic                = True                       # Make a mosaic
+mosaic_area           = [2,2]                      # Mosaic area in degrees    
+mosaic_filling_factor = 2.0                        # Filling factor for mosaic (increase if want non-uniform sensitivity)
+custom_mosaic         = custom_mosaic.txt       # Give custom positons (will override area if set)
+###-----------------###
+###     Imaging     ###
+###-----------------###
+size   = 5000
+cell   = 1.5arcsec
+weight = natural
+clean_rms = True
