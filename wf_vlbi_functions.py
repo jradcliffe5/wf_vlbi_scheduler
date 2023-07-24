@@ -7,6 +7,7 @@ import numpy as np
 from astropy.table import Table
 from astropy import wcs
 from astropy.coordinates import SkyCoord
+
 def setup_logging_to_file(filename):
 	logging.basicConfig( filename='./'+filename,
 						 filemode='w',

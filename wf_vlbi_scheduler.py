@@ -8,6 +8,7 @@ from datetime import datetime
 startTime = datetime.now()
 ### Table stuff
 from astropy.io import ascii
+from astropy.table import vstack
 import pandas as pd
 ### Coordinate stuff
 from astropy.coordinates import SkyCoord
@@ -28,7 +29,7 @@ logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 logging.info('Beginning %s' % os.path.basename(__file__))
 
 
-inputs = headless('scheduler_inputs.txt')
+inputs = headless(sys.argv[1])
 do_targeted = str(inputs['targeted'])
 catalogue = str(inputs['catalog'])
 cat_type = str(inputs['table_format'])
@@ -49,6 +50,7 @@ filter_distance = str(inputs['filter_distance'])
 radius = float(inputs['radius'])
 MSSC_value = float(inputs['MSSC_flux'])
 MSSC_additions=str(inputs['MSSC_additions'])
+npc = int(inputs['nphasecentres'])
 
 if do_targeted == 'True':
     ### Read in tables
@@ -72,19 +74,34 @@ if do_targeted == 'True':
         df = df[truth_array]
         logging.info('Distance filtered. Nphs reduced from %d to %d' % (len(master_table[RA_column]),len(df['RA'])))
         coords = SkyCoord(df[RA_column],df[Dec_column],unit=('deg','deg'))
+    if inputs['clip_phase_centres'] == 'True':
+        if inputs['sortby'] == 'brightest':
+            df.sort(keys=flux_column,reverse=True)
+            df2 = Table([df[RA_column],df[Dec_column]], names=('RA','DEC'))
+            df = df[0:npc]
+        if inputs['sortby'] == 'nearest':
+            pointing_centres = SkyCoord(pointing_centre[0],pointing_centre[1],unit=('deg','deg'))
+            df['separation'] = pointing_centres.separation(coords).to(u.arcmin).value
+            df.sort(keys='separation',reverse=False)
+            df2 = Table([df[RA_column],df[Dec_column]], names=('RA','DEC'))
+            df = df[0:npc]
+        coords = SkyCoord(df[RA_column],df[Dec_column],unit=('deg','deg'))
     if filter_overlap == 'True':
         logging.info('Overlap filtering. Reducing number of phase centres if there are FoV overlaps')
         filtered_coordinates = filter_table(coords,phs_centre_fov) ## Filter the coordinates
-
     df = build_filtered_table(coords,filter=filter_overlap,filter_indices=filtered_coordinates)
     if filter_overlap == 'True':
         logging.info('Overlap filtered. Nphs reduced from %d to %d' % (len(master_table[RA_column]),len(df['RA'])))
+    if inputs['clip_phase_centres'] == 'True':
+        if len(df) < npc:
+            logging.info('Adding %d extra sources as overlap filter reduced phs centers'%(npc-len(df)))
+            df = vstack([df,df2[npc:npc+(npc-len(df))]])
+
 
 
 if do_plots == 'True':
     logging.info('Plotting phase centres')
     centre_coords = [np.average(df['RA']),np.average(df['DEC'])]
-    print(centre_coords)
     pixels = 5000.
     large_range = np.max([np.max(master_table[RA_column])-np.min(master_table[RA_column]),np.max(master_table[Dec_column])-np.min(master_table[Dec_column])])*0.5
     w = generate_central_wcs(centre_coords,[large_range/pixels,large_range/pixels],[0,0])
