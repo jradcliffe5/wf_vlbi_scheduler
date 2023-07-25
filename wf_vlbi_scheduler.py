@@ -93,7 +93,7 @@ if do_targeted == 'True':
     if filter_overlap == 'True':
         logging.info('Overlap filtered. Nphs reduced from %d to %d' % (len(master_table[RA_column]),len(df['RA'])))
     if inputs['clip_phase_centres'] == 'True':
-        if len(df) < npc:
+        if ((len(df) < npc)&(len(df2) >= npc)):
             logging.info('Adding %d extra sources as overlap filter reduced phs centers'%(npc-len(df)))
             df = vstack([df,df2[npc:npc+(npc-len(df))]])
 
