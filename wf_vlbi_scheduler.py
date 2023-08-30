@@ -145,9 +145,11 @@ if output_correlation_list == 'True':
     logging.info('Writing phase centres into CSV format')
     ascii.write(df, '%s_correlation_params.csv'%prefix, format='csv', fast_writer=False,overwrite=True)
     logging.info('Writing phase centres into VEX format')
-    correlation_params = write_correlation_params(prefix=prefix,table=df)
+    correlation_params,source_params = write_correlation_params(prefix=prefix,table=df)
     with open('%s_correlation_params.vex' % prefix, 'w') as f:
         for item in correlation_params:
+            f.write("%s\n" % item)
+        for item in source_params:
             f.write("%s\n" % item)
     f.close()
     logging.info('Complete... %s_correlation_params.vex/.csv has been written to the cwd' % prefix)

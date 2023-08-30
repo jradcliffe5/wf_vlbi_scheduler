@@ -303,8 +303,17 @@ def write_correlation_params(table,prefix):
 	*    ra = 09h57m49.6816121s; dec =  02d47'25.904175"; ref_coord_frame = B1950;
 	*    ra = 10h01m24.8107239s; dec =  02d27'22.307892"; ref_coord_frame = Date;
 	enddef;
+
+	Also returns the list of source names for inclusion in the $SCHED portion of the vex file.
+	e.g., 
+	scan No0066;
+	*     Note a COMMENT was inserted during scheduling: 
+	*       Loop 3 - part 1
+     start=2022y265d00h08m26s; mode=EFF_BAND_32; source=R1_D;
+     source=EK051E01;
 	'''
 	correlation_string = ['$SOURCE;']
+	source_string = ['$SCHED;']
 	for i in range(len(table['RA'])):
 		sig_fig = len(str(len(table['RA'])))
 		c = SkyCoord(table['RA'][i],table['DEC'][i],unit=('deg','deg'))
@@ -317,4 +326,5 @@ def write_correlation_params(table,prefix):
 		correlation_string.append('    source_name = %s%s;'%(prefix[0:(8-sig_fig)],'{0:0{width}}'.format(i, width=sig_fig)))
 		correlation_string.append('    ra = %s; dec = %s; ref_coord_frame = J2000;' % (RA_string,Dec_string))
 		correlation_string.append('enddef;')
-	return correlation_string
+		source_string.append('source=%s%s;'%(prefix[0:(8-sig_fig)],'{0:0{width}}'.format(i, width=sig_fig)))
+	return correlation_string, source_string
