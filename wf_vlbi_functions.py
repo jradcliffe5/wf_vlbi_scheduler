@@ -1,4 +1,4 @@
-import re
+import re, os
 import sys
 import traceback
 import logging
@@ -291,9 +291,9 @@ def convert_frac_to_float(frac_str):
 		frac = float(num) / float(denom)
 		return whole - frac if whole < 0 else whole + frac
 
-def write_correlation_params(table,prefix):
+def write_correlation_params(table,prefix,correlator):
 	'''
-	Function writes the correlation parameters in a $SOURCE vex format so that
+	Function writes the correlation parameters in a $SOURCE vex format or v2d format so that
 	the correlator can read the phase centres in easily.
 	e.g. def COSMOS-DEEP;
      source_name = COSMOS-DEEP;
@@ -303,7 +303,6 @@ def write_correlation_params(table,prefix):
 	*    ra = 09h57m49.6816121s; dec =  02d47'25.904175"; ref_coord_frame = B1950;
 	*    ra = 10h01m24.8107239s; dec =  02d27'22.307892"; ref_coord_frame = Date;
 	enddef;
-
 	Also returns the list of source names for inclusion in the $SCHED portion of the vex file.
 	e.g., 
 	scan No0066;
@@ -311,20 +310,51 @@ def write_correlation_params(table,prefix):
 	*       Loop 3 - part 1
      start=2022y265d00h08m26s; mode=EFF_BAND_32; source=R1_D;
      source=EK051E01;
+
+	or for v2d:
+
+	SOURCE A4038
+	{
+	doPointingCentre = True
+	addPhaseCentre = name@A4038_A/RA@05:28:44.9836/Dec@-65:26:52.447
+	addPhaseCentre = name@A4038_B/RA@05:28:44.6466/Dec@-65:26:44.711
+	}
 	'''
-	correlation_string = ['$SOURCE;']
-	source_string = ['$SCHED;']
-	for i in range(len(table['RA'])):
-		sig_fig = len(str(len(table['RA'])))
-		c = SkyCoord(table['RA'][i],table['DEC'][i],unit=('deg','deg'))
-		sky_string = c.to_string('hmsdms').split(' ')
-		RA_string = sky_string[0]
-		Dec_string = sky_string[1].replace('m',"'").replace('s','\"')
-		if Dec_string[0] == '+':
-			Dec_string = Dec_string.replace('+',' ')
-		correlation_string.append('def %s%s;'%(prefix[0:(8-sig_fig)],'{0:0{width}}'.format(i, width=sig_fig)))
-		correlation_string.append('    source_name = %s%s;'%(prefix[0:(8-sig_fig)],'{0:0{width}}'.format(i, width=sig_fig)))
-		correlation_string.append('    ra = %s; dec = %s; ref_coord_frame = J2000;' % (RA_string,Dec_string))
-		correlation_string.append('enddef;')
-		source_string.append('source=%s%s;'%(prefix[0:(8-sig_fig)],'{0:0{width}}'.format(i, width=sig_fig)))
-	return correlation_string, source_string
+	if correlator == 'sfxc':
+		correlation_string = ['$SOURCE;']
+		source_string = ['$SCHED;']
+		for i in range(len(table['RA'])):
+			sig_fig = len(str(len(table['RA'])))
+			c = SkyCoord(table['RA'][i],table['DEC'][i],unit=('deg','deg'))
+			sky_string = c.to_string('hmsdms').split(' ')
+			RA_string = sky_string[0]
+			Dec_string = sky_string[1].replace('m',"'").replace('s','\"')
+			if Dec_string[0] == '+':
+				Dec_string = Dec_string.replace('+',' ')
+			correlation_string.append('def %s%s;'%(prefix[0:(8-sig_fig)],'{0:0{width}}'.format(i, width=sig_fig)))
+			correlation_string.append('    source_name = %s%s;'%(prefix[0:(8-sig_fig)],'{0:0{width}}'.format(i, width=sig_fig)))
+			correlation_string.append('    ra = %s; dec = %s; ref_coord_frame = J2000;' % (RA_string,Dec_string))
+			correlation_string.append('enddef;')
+			source_string.append('source=%s%s;'%(prefix[0:(8-sig_fig)],'{0:0{width}}'.format(i, width=sig_fig)))
+		
+		with open('%s_correlation_params.vex' % prefix, 'w') as f:
+			for item in correlation_string:
+				f.write("%s\n" % item)
+			for item in source_string:
+				f.write("%s\n" % item)
+		f.close()
+	if correlator == 'difx':
+		correlation_string = ['SOURCE %s'%prefix,'{','doPointingCentre = True']
+		for i in range(len(table['RA'])):
+			sig_fig = len(str(len(table['RA'])))
+			c = SkyCoord(table['RA'][i],table['DEC'][i],unit=('deg','deg'))
+			sky_string = c.to_string('hmsdms').split(' ')
+			RA_string = sky_string[0]
+			Dec_string = sky_string[1].replace('m',"'").replace('s','\"')
+			correlation_string.append('addPhaseCentre = name@%s%s/RA@%s/Dec@%s'%(prefix[0:(8-sig_fig)],'{0:0{width}}'.format(i, width=sig_fig),RA_string,Dec_string))
+		correlation_string.append('}')
+		with open('%s_correlation_params.v2d' % prefix, 'w') as f:
+			for item in correlation_string:
+				f.write("%s\n" % item)
+		f.close()
+	return

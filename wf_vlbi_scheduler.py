@@ -44,6 +44,9 @@ do_plots= str(inputs['do_plots'])
 PB_plots= ast.literal_eval(inputs['PBs'])
 freq = float(inputs['observing_frequency'])
 output_correlation_list = str(inputs['write_correlation_list'])
+phase_centre_format = str(inputs['phase_centre_format']).split(',')
+if len(phase_centre_format) == 1:
+    phase_centre_format = [phase_centre_format]
 pointing_centre = ast.literal_eval(inputs['pointing_centre'])
 prefix = str(inputs['catalogue_prefix'])
 filter_distance = str(inputs['filter_distance'])
@@ -142,14 +145,16 @@ if do_plots == 'True':
     #plt.show()
 
 if output_correlation_list == 'True':
-    logging.info('Writing phase centres into CSV format')
-    ascii.write(df, '%s_correlation_params.csv'%prefix, format='csv', fast_writer=False,overwrite=True)
-    logging.info('Writing phase centres into VEX format')
-    correlation_params,source_params = write_correlation_params(prefix=prefix,table=df)
-    with open('%s_correlation_params.vex' % prefix, 'w') as f:
-        for item in correlation_params:
-            f.write("%s\n" % item)
-        for item in source_params:
-            f.write("%s\n" % item)
-    f.close()
-    logging.info('Complete... %s_correlation_params.vex/.csv has been written to the cwd' % prefix)
+    if 'csv' in phase_centre_format:
+        logging.info('Writing phase centres into CSV format')
+        ascii.write(df, '%s_correlation_params.csv'%prefix, format='csv', fast_writer=False,overwrite=True)
+        logging.info('Complete... %s_correlation_params.csv has been written to the cwd' % prefix)
+    if 'sfxc' in phase_centre_format:
+        logging.info('Writing phase centres into VEX format')
+        write_correlation_params(prefix=prefix,table=df,correlator='sfxc')
+        logging.info('Complete... %s_correlation_params.vex has been written to the cwd' % prefix)
+    if 'difx' in phase_centre_format:
+        logging.info('Writing phase centres into V2D format')
+        write_correlation_params(prefix=prefix,table=df,correlator='difx')
+        logging.info('Complete... %s_correlation_params.v2d has been written to the cwd' % prefix)
+    

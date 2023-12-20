@@ -65,4 +65,5 @@ fitsimage=''
 ### Correlation list ###
 ###------------------###
 write_correlation_list = True
+phase_centre_format = difx         #[csv|difx|sfxc]
 catalogue_prefix = 'ER047'
