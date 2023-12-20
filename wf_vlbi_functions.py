@@ -349,8 +349,8 @@ def write_correlation_params(table,prefix,correlator):
 			sig_fig = len(str(len(table['RA'])))
 			c = SkyCoord(table['RA'][i],table['DEC'][i],unit=('deg','deg'))
 			sky_string = c.to_string('hmsdms').split(' ')
-			RA_string = sky_string[0]
-			Dec_string = sky_string[1].replace('m',"'").replace('s','\"')
+			RA_string = sky_string[0].replace('h',":").replace('m',":").replace('s','')
+			Dec_string = sky_string[1].replace('d',":").replace('m',":").replace('s','')
 			correlation_string.append('addPhaseCentre = name@%s%s/RA@%s/Dec@%s'%(prefix[0:(8-sig_fig)],'{0:0{width}}'.format(i, width=sig_fig),RA_string,Dec_string))
 		correlation_string.append('}')
 		with open('%s_correlation_params.v2d' % prefix, 'w') as f:
