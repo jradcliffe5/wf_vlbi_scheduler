@@ -56,7 +56,7 @@ npc = int(inputs['nphasecentres'])
 if do_targeted == 'True':
     ### Read in tables
     df=ascii.read(catalogue,format=cat_type)
-    #print(df)
+    logging.info(df.info())
     master_table = ascii.read(catalogue,format=cat_type)
     filtered_coordinates=[]
     if filter_flux == 'True':
