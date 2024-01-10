@@ -33,7 +33,7 @@ filter_overlap=True
 # Filter by distance from pointing centre
 filter_distance = True
 pointing_centre = [179.5,62.25]
-radius = 30 # in arcminutes
+radius = 20 # in arcminutes
 
 ### MSSC addon - add sources back in that are above a certain flux level
 MSSC_additions=False

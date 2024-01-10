@@ -60,7 +60,7 @@ if do_targeted == 'True':
     master_table = ascii.read(catalogue,format=cat_type)
     filtered_coordinates=[]
     if filter_flux == 'True':
-        logging.info('Flux filtering. All sources above %.2f kept' % (filter_value))
+        logging.info('Flux filtering. All sources above %.2e kept' % (filter_value))
         df = df[df[flux_column]>filter_value]
         logging.info('Flux filtered. Nphs reduced from %d to %d' % (len(master_table[RA_column]),len(df['RA'])))
     coords = SkyCoord(df[RA_column],df[Dec_column],unit=('deg','deg'))   ## Generate skycoord instance of fits file
