@@ -151,7 +151,6 @@ if do_plots == 'True':
     #plt.show()
 
 if output_correlation_list == 'True':
-    print(phase_centre_format)
     if 'csv' in phase_centre_format:
         logging.info('Writing %d phase centres into CSV format'%len(df))
         ascii.write(df, '%s_correlation_params.csv'%prefix, format='csv', fast_writer=False,overwrite=True)
