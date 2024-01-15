@@ -70,7 +70,7 @@ if do_targeted == 'True':
     if filter_flux == 'True':
         logging.info('Flux filtering. All sources above %.2e kept' % (filter_value))
         df = df[df[flux_column]>filter_value]
-        logging.info('Flux filtered. Nphs reduced from %d to %d' % (len(master_table[RA_column]),len(df['RA'])))
+        logging.info('Flux filtered. Nphs reduced from %d to %d' % (len(master_table[RA_column]),len(df[RA_column])))
     coords = SkyCoord(df[RA_column],df[Dec_column],unit=('deg','deg'))   ## Generate skycoord instance of fits file
     if filter_distance == 'True':
         logging.info('Filtering by distance from phase centre. All sources further than %.1f\' from phase centre will be removed' % radius)
@@ -81,7 +81,7 @@ if do_targeted == 'True':
             truth_array_2 = (pointing_centres.separation(coords).to(u.arcmin).value > radius)&(df[flux_column]>MSSC_value)
             truth_array[truth_array_2==True]=True
         df = df[truth_array]
-        logging.info('Distance filtered. Nphs reduced from %d to %d' % (len(master_table[RA_column]),len(df['RA'])))
+        logging.info('Distance filtered. Nphs reduced from %d to %d' % (len(master_table[RA_column]),len(df[RA_column])))
         coords = SkyCoord(df[RA_column],df[Dec_column],unit=('deg','deg'))
     if inputs['clip_phase_centres'] == 'True':
         if inputs['sortby'] == 'brightest':
