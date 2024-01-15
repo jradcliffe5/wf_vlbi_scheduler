@@ -21,11 +21,19 @@ from wf_vlbi_functions import *
 import logging
 import scipy.constants as c
 from matplotlib.lines import Line2D
+import warnings
+warnings.filterwarnings("ignore", module = "matplotlib" )
 
 ### Setup logger
 log_name = "%s.log" % os.path.basename(__file__).split('.py')[0]
 setup_logging_to_file(log_name)
-logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
+FORMAT = '%(asctime)s'
+logging.basicConfig(format=FORMAT)
+root = logging.getLogger()
+handler = logging.StreamHandler(sys.stdout)
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+root.addHandler(handler)
 logging.info('Beginning %s' % os.path.basename(__file__))
 
 
@@ -56,7 +64,7 @@ npc = int(inputs['nphasecentres'])
 if do_targeted == 'True':
     ### Read in tables
     df=ascii.read(catalogue,format=cat_type)
-    logging.info(df.info())
+    #logging.info(df.info())
     master_table = ascii.read(catalogue,format=cat_type)
     filtered_coordinates=[]
     if filter_flux == 'True':
@@ -145,15 +153,15 @@ if do_plots == 'True':
 if output_correlation_list == 'True':
     print(phase_centre_format)
     if 'csv' in phase_centre_format:
-        logging.info('Writing phase centres into CSV format')
+        logging.info('Writing %d phase centres into CSV format'%len(df))
         ascii.write(df, '%s_correlation_params.csv'%prefix, format='csv', fast_writer=False,overwrite=True)
         logging.info('Complete... %s_correlation_params.csv has been written to the cwd' % prefix)
     if 'sfxc' in phase_centre_format:
-        logging.info('Writing phase centres into VEX format')
+        logging.info('Writing %d phase centres into VEX format'%len(df))
         write_correlation_params(prefix=prefix,table=df,correlator='sfxc')
         logging.info('Complete... %s_correlation_params.vex has been written to the cwd' % prefix)
     if 'difx' in phase_centre_format:
-        logging.info('Writing phase centres into V2D format')
+        logging.info('Writing %d phase centres into V2D format'%len(df))
         write_correlation_params(prefix=prefix,table=df,correlator='difx')
         logging.info('Complete... %s_correlation_params.v2d has been written to the cwd' % prefix)
     
