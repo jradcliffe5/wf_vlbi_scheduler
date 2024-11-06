@@ -11,7 +11,7 @@ from astropy.coordinates import SkyCoord
 def setup_logging_to_file(filename):
 	logging.basicConfig( filename='./'+filename,
 						 filemode='w',
-						 level=logging.DEBUG,
+						 level=logging.INFO,
 						 format= '%(asctime)s - %(levelname)s - %(message)s',
 					   )
 
@@ -254,7 +254,7 @@ def generate_central_wcs(crval, cdelt, crpix):
 	w.wcs.ctype = ["RA---SIN", "DEC--SIN"]
 
 	# Some pixel coordinates of interest.
-	pixcrd = np.array([[-10, -10], [24, 38], [45, 98]], np.float_)
+	pixcrd = np.array([[-10, -10], [24, 38], [45, 98]], np.float64)
 
 	# Convert pixel coordinates to world coordinates
 	world = w.wcs_pix2world(pixcrd, 1)
