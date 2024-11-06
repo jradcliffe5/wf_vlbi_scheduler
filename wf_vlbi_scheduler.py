@@ -136,7 +136,6 @@ if do_plots == 'True':
             iter1 = next(lst)
             iter2 = next(ls2)
             PB_fov = ((c.c/freq)/j)*(180./np.pi)
-            print(PB_fov)
             r = SphericalCircle((float(pointing_centre[0])*u.deg, float(pointing_centre[1])*u.deg), PB_fov/2. * u.degree,
                      edgecolor=iter1,linestyle=iter2, facecolor='none',lw=2,
                      transform=ax.get_transform('world'))
