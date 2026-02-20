@@ -111,12 +111,14 @@ if do_targeted == 'True':
 if do_plots == 'True':
     logging.info('Plotting phase centres')
     centre_coords = [np.average(df['RA']),np.average(df['DEC'])]
+    print(centre_coords)
     pixels = 5000.
     large_range = np.max([np.max(master_table[RA_column])-np.min(master_table[RA_column]),np.max(master_table[Dec_column])-np.min(master_table[Dec_column])])*0.5
     w = generate_central_wcs(centre_coords,[large_range/pixels,large_range/pixels],[0,0])
     fig = plt.figure(1,figsize=(9,9))
     ax = fig.add_subplot(111, projection=w)
     ax.scatter(df['RA'],df['DEC'],c='k',marker='+',transform=ax.get_transform('world'),s=20,label='Phase centres')
+    print(df['RA'],df['DEC'])
     ax.scatter(master_table[RA_column],master_table[Dec_column],transform=ax.get_transform('world'),s=2,label='Source positions')
     leg1 = ax.legend(loc='upper left', bbox_to_anchor=(1.01, 0.6))
     #ax.plot(df['RA'],df['DEC'],'-',transform=ax.get_transform('world'))

@@ -1,0 +1,77 @@
+## Input list to generate multiple phase centre
+## VLBI observations designed to cover either an
+## area or set of coordinates
+
+###--------------###
+### Query Survey ###
+###--------------###
+ra_center = 10
+dec_center = 10
+rad_FoV = 0.25 ## in degrees
+
+
+###---------###
+### General ###
+###---------###
+## Smearing FoV - input smearing FoV (as the radius from pointing centre, in arcmin)
+phs_centre_fov = 20./60.
+
+###-----------------------------###
+### Cover area in VLBI coverage ###
+###-----------------------------###
+area = False
+
+# Set coordinates for area ([[blcx,blcy,trcx,trcy],etc.]) in degrees
+area_coordinates = [[9.75,9.75,10.25,10.25],[9.75,9.75,10.25,10.25]]
+
+###-----------------------------------------###
+### Determine phase centres using catalogue ###
+###-----------------------------------------###
+targeted=True
+
+# Catalogue name and type (will try to guess if type is not set)
+catalog = '/scratch3/esc011/LBA/test_scheduler/RACS_test.csv'
+table_format = 'csv'
+RA_column = 'ra'
+Dec_column = 'dec'
+
+# Filter overlaps where multiple phase centre covers the same source
+filter_overlap=True
+
+# Filter by distance from pointing centre
+filter_distance = False
+pointing_centre = [10,10]
+radius = 30 # in arcminutes
+
+### MSSC addon - add sources back in that are above a certain flux level
+MSSC_additions=False
+MSSC_flux = 1000
+
+### Filter flux density (above value)
+filter_flux = True
+filter_value = 0.5
+flux_column = 'total_flux'
+
+### Clip phase centres
+clip_phase_centres = True
+nphasecentres = 80
+sortby = nearest   # brightest | nearest 
+
+###----------###
+### Plotting ###
+###----------###
+do_plots = True
+# Primary beam sizes to be plotted in metres.
+# NB Need to set pointing_centre and observing_frequency too!
+PBs = [25,32,100]
+# Observing frequency in GHz
+observing_frequency = 1.6e9
+# Background fits image overlay
+fitsimage=''
+
+###------------------###
+### Correlation list ###
+###------------------###
+write_correlation_list = True
+phase_centre_format = difx         #[csv|difx|sfxc]
+catalogue_prefix = 'test'

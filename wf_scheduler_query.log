@@ -1,0 +1,9 @@
+2026-02-19 17:52:17,370 - INFO - Beginning wf_scheduler_query.py
+2026-02-19 17:52:21,381 - INFO - Query finished.
+2026-02-19 17:52:22,402 - INFO - Flux filtering. All sources above 5.00e-01 kept
+2026-02-19 17:52:22,402 - INFO - Flux filtered. Nphs reduced from 90 to 89
+2026-02-19 17:52:22,408 - INFO - Overlap filtering. Reducing number of phase centres if there are FoV overlaps
+2026-02-19 17:52:24,856 - INFO - Overlap filtered. Nphs reduced from 90 to 63
+2026-02-19 17:52:24,856 - INFO - Plotting phase centres
+2026-02-19 17:52:25,728 - INFO - Writing 63 phase centres into V2D format
+2026-02-19 17:52:25,766 - INFO - Complete... v629a_correlation_params.v2d has been written to the cwd
