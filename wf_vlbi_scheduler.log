@@ -1,8 +1,0 @@
-2026-02-05 17:47:45,074 - INFO - Beginning wf_vlbi_scheduler.py
-2026-02-05 17:47:45,079 - INFO - Flux filtering. All sources above 5.00e-01 kept
-2026-02-05 17:47:45,079 - INFO - Flux filtered. Nphs reduced from 37 to 32
-2026-02-05 17:47:45,083 - INFO - Overlap filtering. Reducing number of phase centres if there are FoV overlaps
-2026-02-05 17:47:45,357 - INFO - Overlap filtered. Nphs reduced from 37 to 12
-2026-02-05 17:47:45,357 - INFO - Plotting phase centres
-2026-02-05 17:47:46,738 - INFO - Writing 12 phase centres into V2D format
-2026-02-05 17:47:46,748 - INFO - Complete... test_correlation_params.v2d has been written to the cwd

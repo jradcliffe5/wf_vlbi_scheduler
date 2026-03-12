@@ -3,20 +3,23 @@ from astroquery.casda import Casda
 from astroquery.utils.tap.core import TapPlus
 from astropy import units as u
 
-
+#[67.7905, -61.4777]
 casdatap = TapPlus(url="https://casda.csiro.au/casda_vo_tools/tap")
-query = "SELECT * FROM ivoa.obscore WHERE (1=CONTAINS(POINT('ICRS', 139.5000, -19.0000), s_region))"
+#query = "SELECT TOP 1000 * FROM ivoa.obscore where obs_collection='EMU' and 1=CONTAINS(CIRCLE('ICRS', 67.7905, -61.4777, 20), s_region) and dataproduct_type='cube'"
+#query = "SELECT TOP 1000 * FROM ivoa.obscore where obs_collection='EMU' and 1=CONTAINS(CIRCLE('ICRS', 139.5000, -19.0000, 0.25), s_region) and dataproduct_type='cube'"
+query = "SELECT * FROM ivoa.obscore where obs_collection='EMU' and 1=CONTAINS(CIRCLE('ICRS', 139.5, -19, 0.1), s_region) and dataproduct_subtype LIKE 'catalogue.continuum.component'"
+#query = "SELECT * FROM ivoa.obscore WHERE (1=CONTAINS(POINT('ICRS', 139.5000, -19.0000), s_region))"
 #query = "SELECT * FROM ivoa.obscore WHERE (1=CONTAINS(CIRCLE('ICRS', 139.5000, -19.0000,0.25), s_region))"
 #query = "SELECT * FROM ivoa.obscore WHERE 1=CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', 139.5000, -19.0000,0.25))"
 job = casdatap.launch_job_async(query)
 res = job.get_results()
 
-cond1 = res["dataproduct_type"] == ""  # catalogues for some reason are not a type of dataproduct
-cond2 = res["obs_collection"] == "EMU"
-cond3 = res["quality_level"] == "GOOD"
-idx = np.where(cond1 & cond2 & cond3)[0]
-emu_catalogues = res[idx]
-
+#cond1 = res["dataproduct_type"] == ""  # catalogues for some reason are not a type of dataproduct
+#cond2 = res["obs_collection"] == "EMU"
+#cond3 = res["quality_level"] == "GOOD"
+#idx = np.where(cond1 & cond2 & cond3)[0]
+#emu_catalogues = res[idx]
+emu_catalogues = res
 print(emu_catalogues)
 emu_catalogues.write('emu_test.csv',format='csv', overwrite=True)
 
