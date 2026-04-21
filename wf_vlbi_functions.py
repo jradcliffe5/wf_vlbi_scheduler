@@ -224,17 +224,19 @@ def filter_table(data,value):  ## Function to remove and filter the table of nea
 					indices[k] = indices[k]+[index]
 	return indices,result
 
-def build_filtered_table(table, filter, filter_indices):
+def build_filtered_table(table,flux, filter, filter_indices):
 	if filter == 'False':
-		return Table([table.ra.deg,table.dec.deg], names=('RA','DEC'))
+		return Table([table.ra.deg,table.dec.deg,flux], names=('RA','DEC','total_flux'))
 	else: 
-		df = Table([table.ra.deg,table.dec.deg], names=('RA','DEC'))
+		df = Table([table.ra.deg,table.dec.deg,flux], names=('RA','DEC','total_flux'))
 		RA = []
 		DEC = []
+		flux = []
 		for i in range(len(filter_indices[0])):
 			RA.append(np.average(df[filter_indices[0][i]]['RA']))
 			DEC.append(np.average(df[filter_indices[0][i]]['DEC']))
-		return Table([RA,DEC], names=('RA','DEC'))
+			flux.append(np.average(df[filter_indices[0][i]]['total_flux']))
+		return Table([RA,DEC,flux], names=('RA','DEC','total_flux'))
 
 def generate_central_wcs(crval, cdelt, crpix):
 	# Create a new WCS object.  The number of axes must be set
