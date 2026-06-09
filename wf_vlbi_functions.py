@@ -1,5 +1,6 @@
 import re, os
 import sys
+import json
 import traceback
 import logging
 import astropy.units as u
@@ -358,3 +359,363 @@ def write_correlation_params(table,prefix,correlator):
 				f.write("%s\n" % item)
 		f.close()
 	return
+
+def primary_beam_power(offset, diameters, frequency, weights=None, pb_coeff=1.0):
+	'''
+	Analytic array primary-beam power response at an angular offset from the
+	pointing centre, assuming a Gaussian voltage (element) beam per antenna.
+
+	The voltage beam of antenna p is modelled as
+	    E_p(r) = exp(-r^2 / 2 sigma_p^2),  sigma_p = FWHM_p / (2 sqrt(2 ln2)),
+	    FWHM_p = pb_coeff * lambda / D_p.
+	The baseline power beam is the (real) product
+	    P_pq(r) = E_p E_q / sqrt(W_p W_q),
+	which is itself a Gaussian with 1/sigma_pq^2 = 1/sigma_p^2 + 1/sigma_q^2.
+	The array beam is the sensitivity-weighted sum over baselines
+	    P_T(r) = sum_{j>i} w_ij exp(-r^2 / 2 sigma_ij^2),  w_ij = 1/sqrt(W_i W_j),
+	and this returns the response normalised to the pointing centre, P_T(r)/P_T(0)
+	(1.0 at centre, falling towards 0). Invert (P_T(0)/P_T(r)) for the correction.
+
+	Parameters
+	----------
+	offset : float, array-like or astropy Quantity
+	    Angular distance from the pointing centre. Plain numbers are degrees.
+	diameters : float or array-like
+	    Dish diameter(s) in metres. A scalar is treated as a homogeneous array
+	    (the normalised shape is then independent of N_ant). A list/array gives a
+	    heterogeneous array and the full per-baseline sum is evaluated.
+	frequency : float or astropy Quantity
+	    Observing frequency. Plain numbers are Hz.
+	weights : array-like, optional
+	    Per-antenna weights W_p (e.g. SEFD or noise variance). Only the relative
+	    values affect the shape. Defaults to equal weighting. Ignored for the
+	    homogeneous (scalar diameter) case.
+	pb_coeff : float, optional
+	    FWHM coefficient in FWHM = pb_coeff * lambda / D. 1.0 (default) for a
+	    roughly uniform aperture; ~1.22 for a uniformly illuminated dish.
+
+	Returns
+	-------
+	float or numpy.ndarray
+	    Normalised primary-beam power (same shape as ``offset``), in [0, 1].
+	'''
+	# Coerce inputs to plain numbers in SI / radians
+	if isinstance(offset, u.Quantity):
+		r = offset.to(u.rad).value
+	else:
+		r = np.deg2rad(np.asarray(offset, dtype=float))
+	if isinstance(frequency, u.Quantity):
+		nu = frequency.to(u.Hz).value
+	else:
+		nu = float(frequency)
+
+	c = 2.99792458e8           # speed of light, m/s
+	lam = c / nu               # wavelength, m
+	fwhm_to_sigma = 1.0 / (2.0 * np.sqrt(2.0 * np.log(2.0)))
+
+	D = np.atleast_1d(np.asarray(diameters, dtype=float))
+	# Per-antenna Gaussian sigma (radians)
+	sigma = pb_coeff * (lam / D) * fwhm_to_sigma
+
+	# Homogeneous shortcut: all baselines identical, shape independent of N_ant
+	if D.size == 1:
+		sigma_bl2 = 0.5 * sigma[0] ** 2          # 1/sig_bl^2 = 2/sig^2
+		return np.exp(-r ** 2 / (2.0 * sigma_bl2))
+
+	# Heterogeneous array: explicit sum over unique baselines j > i
+	n = D.size
+	if weights is None:
+		W = np.ones(n)
+	else:
+		W = np.atleast_1d(np.asarray(weights, dtype=float))
+		if W.size != n:
+			raise ValueError('weights must match the number of diameters')
+
+	i_idx, j_idx = np.triu_indices(n, k=1)
+	inv_sigma2 = 1.0 / sigma ** 2
+	inv_sigma_bl2 = inv_sigma2[i_idx] + inv_sigma2[j_idx]   # 1/sigma_ij^2
+	w_bl = 1.0 / np.sqrt(W[i_idx] * W[j_idx])               # baseline weight
+
+	# Broadcast baselines against (possibly array-valued) offset
+	r_arr = np.asarray(r, dtype=float)
+	exponent = -0.5 * np.multiply.outer(r_arr ** 2, inv_sigma_bl2)
+	P = np.sum(w_bl * np.exp(exponent), axis=-1) / np.sum(w_bl)
+	return P if r_arr.ndim else float(P)
+
+# ------------------------------------------------------------------------------
+# Station look-up table + vex helpers for the array primary beam
+# ------------------------------------------------------------------------------
+
+# Single editable table of dish diameters / SEFDs, keyed by 2-letter station
+# code. Regenerate from the upstream sources with build_stations.py.
+STATIONS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+							 'data', 'stations.json')
+
+def load_stations(path=STATIONS_FILE):
+	'''Load the station look-up table (diameters + per-band SEFDs).
+
+	Returns a dict keyed by upper-case 2-letter station code, e.g.
+	    {'EF': {'diameter_m': 76.0, 'pb_model': 'G', 'sefd_jy': {'18': 19.0, ...}}}
+	'''
+	with open(path) as f:
+		return json.load(f)
+
+def _freq_to_band_cm(frequency, available):
+	'''Return the entry from ``available`` (band labels in cm) whose wavelength
+	is closest to ``frequency`` (Hz). ``available`` is an iterable of strings.'''
+	lam_cm = 2.99792458e10 / float(frequency)   # c in cm/s over Hz
+	bands = [b for b in available]
+	return min(bands, key=lambda b: abs(float(b) - lam_cm))
+
+def parse_vex_array(vexfile):
+	'''Use vex.py to read which stations observe and the observing frequency.
+
+	Returns ``(site_ids, frequency_hz)`` where ``site_ids`` is the list of
+	2-letter station codes (in order of first appearance in the schedule).
+	'''
+	import io, contextlib
+	sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+	from vex import Vex
+	with contextlib.redirect_stdout(io.StringIO()):   # hush vex.py chatter
+		v = Vex(vexfile)
+
+	# Map site_name -> site_ID from the $SITE sector
+	name2id = {}
+	name = None
+	for line in v.get_sector('SITE'):
+		nm = v.get_variable('site_name', line)
+		if nm:
+			name = nm
+		sid = v.get_variable('site_ID', line)
+		if sid:
+			name2id[name] = sid
+
+	# Unique participating stations, in scan order
+	seen = []
+	for scan in v.sched:
+		for s in scan['scan'].values():
+			if s['site'] not in seen:
+				seen.append(s['site'])
+
+	site_ids = [name2id.get(nm, nm) for nm in seen]
+	return site_ids, v.freq
+
+def primary_beam_power_from_vex(offset, vexfile, frequency=None,
+								weight_by_sefd=True, stations=None):
+	'''Array primary-beam power at an angular ``offset`` for the array defined
+	in a vex schedule.
+
+	Pulls the participating stations (and observing frequency) from the vex file
+	via vex.py, looks up each dish diameter and SEFD in the consolidated station
+	table (data/stations.json), and evaluates :func:`primary_beam_power` with
+	SEFD-weighted baselines.
+
+	Parameters
+	----------
+	offset : float, array-like or astropy Quantity
+	    Angular distance from the pointing centre (plain numbers are degrees).
+	vexfile : str
+	    Path to the .vex schedule.
+	frequency : float or astropy Quantity, optional
+	    Override the observing frequency (plain numbers are Hz). Defaults to the
+	    value parsed from the vex file.
+	weight_by_sefd : bool
+	    If True (default) weight baselines by 1/sqrt(SEFD_i SEFD_j); falls back to
+	    uniform weighting if any participating station lacks an SEFD.
+	stations : dict, optional
+	    Pre-loaded station table; defaults to :func:`load_stations`.
+
+	Returns
+	-------
+	float or numpy.ndarray
+	    Normalised primary-beam power (same shape as ``offset``), in [0, 1].
+	'''
+	if stations is None:
+		stations = load_stations()
+
+	site_ids, vex_freq = parse_vex_array(vexfile)
+	if frequency is None:
+		frequency = vex_freq
+	elif isinstance(frequency, u.Quantity):
+		frequency = frequency.to(u.Hz).value
+
+	diameters, weights, missing = [], [], []
+	for sid in site_ids:
+		entry = stations.get(sid.upper())
+		if entry is None or entry.get('diameter_m') is None:
+			missing.append(sid)
+			continue
+		diameters.append(entry['diameter_m'])
+		sefd = entry.get('sefd_jy') or {}
+		if sefd:
+			band = _freq_to_band_cm(frequency, sefd.keys())
+			weights.append(sefd[band])
+		else:
+			weights.append(None)
+
+	if missing:
+		logging.warning('No dish diameter for station(s): %s - excluded from the '
+						'primary beam' % ', '.join(missing))
+	if len(diameters) < 2:
+		raise ValueError('Need at least 2 stations with known diameters; '
+						 'found %d' % len(diameters))
+
+	if weight_by_sefd and all(w is not None for w in weights):
+		W = weights
+	else:
+		if weight_by_sefd:
+			logging.warning('Missing SEFD for some stations - using uniform weights')
+		W = None
+
+	return primary_beam_power(offset, diameters, frequency, weights=W)
+
+# ------------------------------------------------------------------------------
+# Thermal (radiometer-equation) sensitivity
+# ------------------------------------------------------------------------------
+
+def array_image_rms(sefds, bandwidth, t_int, eta=0.7, n_pol=2):
+	'''Naturally-weighted image thermal noise of an interferometer (radiometer
+	equation), combining all baselines:
+
+	    dS_im = (1 / eta) * [ n_pol * sum_{j>i} 2 dnu t / (SEFD_i SEFD_j) ]^-1/2
+
+	Parameters
+	----------
+	sefds : array-like
+	    Per-antenna SEFDs (Jy).
+	bandwidth : float or astropy Quantity
+	    Total (synthesised) bandwidth; plain numbers are Hz.
+	t_int : float or astropy Quantity
+	    On-source integration time; plain numbers are seconds. Assumes every
+	    baseline is present for this time (an upper bound for real schedules).
+	eta : float
+	    System/digitisation efficiency (~0.7 for 2-bit VLBI). Default 0.7.
+	n_pol : int
+	    Number of polarisations combined for Stokes I (2 gains sqrt(2)). Default 2.
+
+	Returns
+	-------
+	float
+	    1-sigma image rms in Jy/beam.
+	'''
+	if isinstance(bandwidth, u.Quantity):
+		bandwidth = bandwidth.to(u.Hz).value
+	if isinstance(t_int, u.Quantity):
+		t_int = t_int.to(u.s).value
+
+	S = np.atleast_1d(np.asarray(sefds, dtype=float))
+	if S.size < 2:
+		raise ValueError('Need at least 2 SEFDs')
+	i_idx, j_idx = np.triu_indices(S.size, k=1)
+	inv_var = np.sum(2.0 * bandwidth * t_int / (S[i_idx] * S[j_idx]))
+	return 1.0 / (eta * np.sqrt(n_pol * inv_var))
+
+def _vex_onsource_seconds(sched, source=None):
+	'''Total on-source time (s) summed over scans, optionally for one source.'''
+	total = 0.0
+	for scan in sched:
+		if source is not None and scan.get('source') != source:
+			continue
+		starts = [s['scan_sec_start'] for s in scan['scan'].values()]
+		ends = [s['scan_sec'] for s in scan['scan'].values()]
+		if starts and ends:
+			total += max(ends) - min(starts)
+	return total
+
+def expected_rms_from_vex(vexfile, bandwidth=None, source=None, t_int=None,
+						  frequency=None, offset=0.0, eta=0.7, n_pol=2,
+						  stations=None):
+	'''Expected image thermal noise for the array in a vex schedule.
+
+	Pulls the participating stations and (optionally) on-source time from the
+	vex file, looks up each SEFD in the consolidated station table, and applies
+	the radiometer equation via :func:`array_image_rms`. With ``offset`` > 0 the
+	result is divided by the primary-beam power at that offset to give the
+	effective noise away from the pointing centre.
+
+	Parameters
+	----------
+	vexfile : str
+	    Path to the .vex schedule.
+	bandwidth : float or astropy Quantity, optional
+	    Total synthesised bandwidth (plain numbers are Hz). If None it is taken
+	    from the vex file (sum of the per-channel widths over unique sky-frequency
+	    channels, i.e. ``Vex.total_bw_hz``).
+	source : str, optional
+	    Restrict the on-source time to this vex source name.
+	t_int : float or astropy Quantity, optional
+	    On-source integration time; if None it is summed from the schedule.
+	frequency : float or astropy Quantity, optional
+	    Override the observing frequency used for SEFD band selection.
+	offset : float, array-like or astropy Quantity
+	    Angular offset from the pointing centre for the effective noise (plain
+	    numbers are degrees). Default 0.0 = central rms.
+	eta, n_pol :
+	    Passed through to :func:`array_image_rms`.
+	stations : dict, optional
+	    Pre-loaded station table; defaults to :func:`load_stations`.
+
+	Returns
+	-------
+	float or numpy.ndarray
+	    1-sigma rms in Jy/beam (scalar for central; array if ``offset`` is array).
+	'''
+	if stations is None:
+		stations = load_stations()
+
+	import io, contextlib
+	sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+	from vex import Vex
+	with contextlib.redirect_stdout(io.StringIO()):
+		v = Vex(vexfile)
+
+	# site_name -> site_ID, and participating stations in scan order
+	name2id, name = {}, None
+	for line in v.get_sector('SITE'):
+		nm = v.get_variable('site_name', line)
+		if nm:
+			name = nm
+		sid = v.get_variable('site_ID', line)
+		if sid:
+			name2id[name] = sid
+	seen = []
+	for scan in v.sched:
+		for s in scan['scan'].values():
+			if s['site'] not in seen:
+				seen.append(s['site'])
+	site_ids = [name2id.get(nm, nm) for nm in seen]
+
+	if frequency is None:
+		frequency = v.freq
+	elif isinstance(frequency, u.Quantity):
+		frequency = frequency.to(u.Hz).value
+	if t_int is None:
+		t_int = _vex_onsource_seconds(v.sched, source)
+	if bandwidth is None:
+		bandwidth = getattr(v, 'total_bw_hz', None)
+		if bandwidth is None:
+			raise ValueError('No total bandwidth in vex file; pass bandwidth '
+							 'explicitly')
+
+	sefds, missing = [], []
+	for sid in site_ids:
+		entry = stations.get(sid.upper())
+		sefd = (entry or {}).get('sefd_jy') or {}
+		if not sefd:
+			missing.append(sid)
+			continue
+		band = _freq_to_band_cm(frequency, sefd.keys())
+		sefds.append(sefd[band])
+	if missing:
+		logging.warning('No SEFD for station(s): %s - excluded from the rms'
+						% ', '.join(missing))
+	if len(sefds) < 2:
+		raise ValueError('Need at least 2 stations with known SEFDs; found %d'
+						 % len(sefds))
+
+	rms = array_image_rms(sefds, bandwidth, t_int, eta=eta, n_pol=n_pol)
+
+	if np.any(np.asarray(offset) != 0.0):
+		rms = rms / primary_beam_power_from_vex(offset, vexfile, frequency=frequency,
+												stations=stations)
+	return rms

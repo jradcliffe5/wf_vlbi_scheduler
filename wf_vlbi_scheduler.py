@@ -43,7 +43,9 @@ catalogue = str(inputs['catalog'])
 cat_type = str(inputs['table_format'])
 RA_column = str(inputs['RA_column'])
 Dec_column = str(inputs['Dec_column'])
-filter_flux = str(inputs['filter_flux'])
+filter_flat_flux = str(inputs['filter_flat_flux'])
+filter_by_pb = str(inputs['filter_by_pb'])
+filter_by_pb_nsigma = float(inputs['filter_by_pb_nsigma'])
 filter_value = float(inputs['filter_value'])
 flux_column = str(inputs['flux_column'])
 phs_centre_fov = convert_frac_to_float(inputs['phs_centre_fov'])
@@ -67,10 +69,29 @@ if do_targeted == 'True':
     #logging.info(df.info())
     master_table = ascii.read(catalogue,format=cat_type)
     filtered_coordinates=[]
-    if filter_flux == 'True':
+    if filter_flat_flux == 'True':
         logging.info('Flux filtering. All sources above %.2e kept' % (filter_value))
         df = df[df[flux_column]>filter_value]
         logging.info('Flux filtered. Nphs reduced from %d to %d' % (len(master_table[RA_column]),len(df[RA_column])))
+    if filter_by_pb == 'True':
+        vexfile = str(inputs['vexfile'])
+        flux_unit = u.Unit(str(inputs.get('flux_unit', 'Jy')))
+        logging.info('PB sensitivity filtering using %s. Removing sources whose '
+                     'primary-beam-attenuated flux is below %.1f sigma'
+                     % (os.path.basename(vexfile), filter_by_pb_nsigma))
+        pb_coords = SkyCoord(df[RA_column], df[Dec_column], unit=('deg', 'deg'))
+        pointing_centres = SkyCoord(pointing_centre[0], pointing_centre[1], unit=('deg', 'deg'))
+        offsets = pointing_centres.separation(pb_coords).to(u.deg).value
+        # Effective image rms at each source's offset = central rms / PB power.
+        # expected_rms_from_vex divides by the primary-beam power for offset>0,
+        # so comparing the (un-attenuated) source flux to nsigma*eff_rms is
+        # equivalent to requiring PB-attenuated_flux > nsigma * central_rms.
+        eff_rms = expected_rms_from_vex(vexfile, frequency=freq, offset=offsets)  # Jy/beam
+        threshold = filter_by_pb_nsigma * eff_rms                                 # Jy/beam
+        flux_jy = (np.asarray(df[flux_column], dtype=float) * flux_unit).to(u.Jy).value
+        df = df[flux_jy > threshold]
+        logging.info('PB sensitivity filtered. Nphs reduced from %d to %d'
+                     % (len(master_table[RA_column]), len(df[RA_column])))
     coords = SkyCoord(df[RA_column],df[Dec_column],unit=('deg','deg'))   ## Generate skycoord instance of fits file
     if filter_distance == 'True':
         logging.info('Filtering by distance from phase centre. All sources further than %.1f\' from phase centre will be removed' % radius)

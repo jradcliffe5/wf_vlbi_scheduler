@@ -40,9 +40,15 @@ MSSC_additions=False
 MSSC_flux = 1000
 
 ### Filter flux density (above value)
-filter_flux = True
-filter_value = 0.5
 flux_column = 'total_flux'
+filter_flat_flux = True
+filter_value = 0.5
+filter_by_pb = False
+filter_by_pb_nsigma = 5
+# vex schedule used to derive the array sensitivity (stations, freq, t_int, bandwidth)
+vexfile = v629a.vex
+# units of flux_column in the catalogue (e.g. Jy, mJy, uJy)
+flux_unit = uJy
 
 ### Clip phase centres
 clip_phase_centres = True

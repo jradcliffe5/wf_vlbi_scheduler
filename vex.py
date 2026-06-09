@@ -116,12 +116,14 @@ class Vex(object):
 		FREQ = self.get_sector('FREQ')
 		indef = False
 		nfreq = 0
+		chans = []  # (sky_freq_hz, sideband, bw_hz) per chan_def in the first def
 		for i in range(len(FREQ)):
 
 			line = FREQ[i]
 			if line[0:3] == "def":
 				if nfreq > 0:
-					print("Not implemented yet.")
+					# Only the first FREQ def is used for bandwidth accounting
+					break
 				nfreq += 1
 				indef = True
 
@@ -129,11 +131,29 @@ class Vex(object):
 				idx = line.find('chan_def')
 				if idx >= 0 and line[0] != '*':
 					chan_def = re.findall(r"[-+]?\d+[\.]?\d*", line)
-					self.freq = float(chan_def[0]) * 1.e6
-					self.bw_hz = float(chan_def[1]) * 1.e6
+					# Sideband sits in its own ':'-delimited field as 'U' or 'L'
+					sb = next((f.strip() for f in line.split(':')
+							   if f.strip() in ('U', 'L')), '')
+					chans.append((float(chan_def[0]) * 1.e6, sb,
+								  float(chan_def[1]) * 1.e6))
 
 				if line[0:6] == "enddef":
 					indef = False
+
+		if chans:
+			# First channel's sky frequency / per-channel width (backward compat)
+			self.freq = chans[0][0]
+			self.bw_hz = chans[0][2]
+			# Total synthesised bandwidth = sum of per-channel widths over unique
+			# (sky frequency, sideband) channels. Deduping this way collapses the
+			# R/L polarisation pair (same frequency and sideband) so dual-pol
+			# setups are not double-counted, while keeping genuinely distinct
+			# upper/lower sidebands that share a centre frequency.
+			uniq = {}
+			for fq, sb, bw in chans:
+				uniq[(fq, sb)] = bw
+			self.n_chan = len(uniq)
+			self.total_bw_hz = sum(uniq.values())
 
 		# SITE ==========================================================
 		SITE = self.get_sector('SITE')
