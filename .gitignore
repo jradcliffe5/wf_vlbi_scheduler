@@ -2,3 +2,4 @@
 *.log
 *.csv
 *.v2d
+__pycache__

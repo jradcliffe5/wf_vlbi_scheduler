@@ -8,6 +8,7 @@ import numpy as np
 from astropy.table import Table
 from astropy import wcs
 from astropy.coordinates import SkyCoord
+from collections import defaultdict
 
 def setup_logging_to_file(filename):
 	logging.basicConfig( filename='./'+filename,
@@ -719,3 +720,58 @@ def expected_rms_from_vex(vexfile, bandwidth=None, source=None, t_int=None,
 		rms = rms / primary_beam_power_from_vex(offset, vexfile, frequency=frequency,
 												stations=stations)
 	return rms
+
+def locate_sources(vexfile):
+    """Identify fringe finders, phase calibrators and target sources from a VEX schedule.
+
+    Returns a tuple ``(fringe_finders, phase_refs, Sources)``.
+    """
+    fringe_finders = []
+    phase_refs = []
+    Sources = []
+
+    ##fringe finders will be next to each other
+    for i in range(len(vexfile.sched)-3): ### minus three to remove final scan which is two phase ref scans
+        if vexfile.sched[i]['source']==vexfile.sched[i+1]['source'] and vexfile.sched[i]['scan'][0]['scan_sec']<300:
+            fringe_finders.append(vexfile.sched[i]['source'])
+
+    fringe_finders = list(set(fringe_finders))
+
+    neighbors = defaultdict(set)
+    time = defaultdict(float)
+
+    ### phase reference and sources are one after another
+    for i in range(len(vexfile.sched) - 1):
+        s1 = vexfile.sched[i]['source']
+        s2 = vexfile.sched[i+1]['source']
+        t1 = vexfile.sched[i]['scan'][0]['scan_sec']
+        t2 = vexfile.sched[i+1]['scan'][0]['scan_sec']
+
+        time[s1]=t1
+        time[s2]=t2
+
+        if s1 != s2 and s1 not in fringe_finders and s2 not in fringe_finders:
+            neighbors[s1].add(s2)
+            neighbors[s2].add(s1)
+
+        pairs = {tuple(sorted([s, list(neigh)[0]])) for s, neigh in neighbors.items() if len(neigh) == 1}
+
+        pairs_with_times = {}
+
+        for a, b in pairs:
+            pairs_with_times[(a, b)] = (time[a], time[b])
+
+    items = list(pairs_with_times.items())
+
+    ##source will be longer observed than phase reference sources
+    for i in range(len(items)):
+        sources = items[i][0]
+        times = items[i][1]
+        if times[0]>times[1]:
+            phase_refs.append(sources[1])
+            Sources.append(sources[0])
+        else:
+            phase_refs.append(sources[0])
+            Sources.append(sources[1])
+
+    return fringe_finders, phase_refs, Sources

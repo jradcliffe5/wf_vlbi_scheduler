@@ -27,11 +27,11 @@ from astropy.table import Table
 from astroquery.utils.tap.core import TapPlus
 import astropy.units as u
 warnings.filterwarnings("ignore", module = "matplotlib" )
+warnings.filterwarnings("ignore", category=u.UnitsWarning)
 from astropy.coordinates import SkyCoord
 ### commensal extras
 from vex import Vex
 from astropy.coordinates import Angle
-from collections import defaultdict
 
 ### Setup logger
 log_name = "%s.log" % os.path.basename(__file__).split('.py')[0]
@@ -48,10 +48,10 @@ logging.info('Beginning %s' % os.path.basename(__file__))
 #### Download VEX
 cat_path = sys.argv[2]
 experiment = sys.argv[1]
-print(experiment)
+logging.info('Experiment: %s', experiment)
 without_epoch = experiment[:-1]
-vexfile = '{}.vex'.format(experiment)
-if not os.path.exists(vexfile):
+vexfile_name = '{}.vex'.format(experiment)
+if not os.path.exists(vexfile_name):
     os.system('wget ftp://ftp.atnf.csiro.au/pub/people/vlbi/{}/{}/{}.vex'.format(without_epoch, experiment, experiment))
 vexfile=Vex('{}.vex'.format(experiment))
 freq = vexfile.freq
@@ -64,7 +64,10 @@ do_plots = 'True'
 npc = 100
 do_targeted = 'True'
 cat_type = 'csv'
-filter_flux = 'True'
+filter_flux = 'False'
+filter_by_pb = 'True'
+filter_by_pb_nsigma = 4
+flux_unit='Jy'
 filter_value = 0.5 ### 5sigma noise level of LBA
 phs_centre_fov = 58.24/60. ##smearing FoV, using the calculated bandwidth, phases within this distance will be combined
 filter_overlap = 'True'
@@ -81,60 +84,13 @@ filter_exclusion_rad = 'True'
 exclusion_radius = 10./60 #These phase centers will be removed to protect PI source
 ######
 
+
 ############ locate fringe finders, phase calibrators, target sources
-fringe_finders = []
-phase_refs = []
-Sources = []
+fringe_finders, phase_refs, targets = locate_sources(vexfile)
 
-
-##fringe finders will be next to each other
-for i in range(len(vexfile.sched)-3): ### minus three to remove final scan which is two phase ref scans
-    if vexfile.sched[i]['source']==vexfile.sched[i+1]['source'] and vexfile.sched[i]['scan'][0]['scan_sec']<300:
-        fringe_finders.append(vexfile.sched[i]['source'])
-
-fringe_finders = list(set(fringe_finders))
-
-
-neighbors = defaultdict(set)
-time = defaultdict(float)
-
-### phase reference and sources are one after another
-for i in range(len(vexfile.sched) - 1):
-    s1 = vexfile.sched[i]['source']
-    s2 = vexfile.sched[i+1]['source']
-    t1 = vexfile.sched[i]['scan'][0]['scan_sec']
-    t2 = vexfile.sched[i+1]['scan'][0]['scan_sec']
-
-    time[s1]=t1
-    time[s2]=t2
-
-    if s1 != s2 and s1 not in fringe_finders and s2 not in fringe_finders:
-        neighbors[s1].add(s2)
-        neighbors[s2].add(s1)
-
-    pairs = {tuple(sorted([s, list(neigh)[0]])) for s, neigh in neighbors.items() if len(neigh) == 1}
-
-    pairs_with_times = {}
-
-    for a, b in pairs:
-        pairs_with_times[(a, b)] = (time[a], time[b])
-
-items = list(pairs_with_times.items())
-
-##source will be longer observed than phase reference sources
-for i in range(len(items)):
-    sources = items[i][0]
-    times = items[i][1]
-    if times[0]>times[1]:
-        phase_refs.append(sources[1])
-        Sources.append(sources[0])
-    else:
-        phase_refs.append(sources[0])
-        Sources.append(sources[1])
-
-print('Fringe Finders: ', fringe_finders)
-print('Phase Refs: ', phase_refs)
-print('Sources: ', Sources)
+logging.info('Fringe finder(s): %s', ', '.join(fringe_finders))
+logging.info('Phase reference(s): %s', ', '.join(phase_refs))
+logging.info('Target(s): %s', ', '.join(targets))
 
 
 ### now locate potential phase centers from RACs mid, EMU or VLASS
@@ -145,8 +101,9 @@ survey = []
 number_phase_centers = []
 number_unfiltered_pc = []
 
-for i in range(len(Sources)):
-    source_name =Sources[i]
+for i in range(len(targets)):
+    logging.info('Estimating the phase centres for source: %s'%targets[i])
+    source_name =targets[i]
     source_names.append(source_name)
     ra_center = Angle(vexfile.source[source_name]['ra']).degree
     dec_center = Angle(vexfile.source[source_name]['dec']).degree
@@ -165,7 +122,7 @@ for i in range(len(Sources)):
     Dec_column = keep_cols[1]
     flux_column = keep_cols[2]
     catalogue='RACS_potential_phase_centers_{}.csv'.format(source_name)
-    print("Number of potential phase centers in RACs Mid", len(r))
+    logging.info('Number of potential phase centers in RACs Mid: %d', len(r))
 
     #### EMU
     emu_cat = Table.read(cat_path + '/EMU_components1.fits')
@@ -173,14 +130,16 @@ for i in range(len(Sources)):
     emu_coords = SkyCoord(ra=emu_cat['ra_deg_cont'], dec=emu_cat['dec_deg_cont'])
     sep = emu_coords.separation(center)
     emu_potential_phase = emu_cat[np.where((sep<=0.25*u.deg))]
-    print('Number of potential phase centers in EMU',len(emu_potential_phase))
+    del emu_cat
+    logging.info('Number of potential phase centers in EMU: %d', len(emu_potential_phase))
 
     #### VLASS
     vlass_cat = Table.read(cat_path + '/CIRADA_VLASS2QLv2_table1_components.csv',format='csv')
     vlass_coords = SkyCoord(ra=vlass_cat['RA']*u.deg, dec=vlass_cat['DEC']*u.deg)
     vlass_sep = vlass_coords.separation(center)
     vlass_potential_phase = vlass_cat[np.where((vlass_sep<=0.25*u.deg))]
-    print("Number of potential phase centers in VLASS", len(vlass_potential_phase))
+    del vlass_cat
+    logging.info('Number of potential phase centers in VLASS: %d', len(vlass_potential_phase))
 
 
     ### pick survey with most sources to proceed with, if equal go with EMU
@@ -191,13 +150,13 @@ for i in range(len(Sources)):
        RA_column = 'ra_deg_cont'
        Dec_column = 'dec_deg_cont'
        survey.append('EMU')
-       print('Using EMU')
+       logging.info('Using EMU')
 
     elif len(r) > len(emu_potential_phase) and len(r) > len(vlass_potential_phase):
        catalogue = r
        surv = 'RACs'
        survey.append('RACs')
-       print('Using RACs')
+       logging.info('Using RACs')
 
     elif len(vlass_potential_phase) > len(r) and len(vlass_potential_phase) > len(emu_potential_phase):
        surv = 'VLASS'
@@ -206,7 +165,7 @@ for i in range(len(Sources)):
        RA_column = 'RA'
        Dec_column = 'DEC'
        survey.append('VLASS')
-       print('Using VLASS')
+       logging.info('Using VLASS')
 
     if do_targeted == 'True':
         ### Read in tables
@@ -218,14 +177,33 @@ for i in range(len(Sources)):
             df = df[df[flux_column]>filter_value]
             logging.info('Flux filtered. Nphs reduced from %d to %d' % (len(master_table[RA_column]),len(df[RA_column])))
         coords = SkyCoord(df[RA_column],df[Dec_column],unit=('deg','deg'))
+        if filter_by_pb == 'True':
+            flux_unit = u.Unit(str(flux_unit))
+            logging.info('PB sensitivity filtering using %s. Removing sources whose '
+                        'primary-beam-attenuated flux is below %.1f sigma'
+                        % (os.path.basename(vexfile_name), filter_by_pb_nsigma))
+            pb_coords = SkyCoord(df[RA_column], df[Dec_column], unit=('deg', 'deg'))
+            pointing_centres = SkyCoord(pointing_centre[0], pointing_centre[1], unit=('deg', 'deg'))
+            offsets = pointing_centres.separation(pb_coords).to(u.deg).value
+            # Effective image rms at each source's offset = central rms / PB power.
+            # expected_rms_from_vex divides by the primary-beam power for offset>0,
+            # so comparing the (un-attenuated) source flux to nsigma*eff_rms is
+            # equivalent to requiring PB-attenuated_flux > nsigma * central_rms.
+            eff_rms = expected_rms_from_vex(vexfile_name, frequency=freq, offset=offsets, source=targets[i])  # Jy/beam
+            threshold = filter_by_pb_nsigma * eff_rms                                 # Jy/beam
+            logging.info('Estimated central rms for %s: %.7f'%(targets[i],np.min(eff_rms)))
+            flux_jy = (np.asarray(df[flux_column], dtype=float) * flux_unit).to(u.Jy).value
+            df = df[flux_jy > threshold]
+            logging.info('PB sensitivity filtered. Nphs reduced from %d to %d'
+                     % (len(master_table[RA_column]), len(df[RA_column])))
         fluxs = df[flux_column]
         if filter_distance == 'True':
-            logging.info('Filtering by distance from phase centre. All sources further than %.1f\' from phase centre will be removed' % radius)
+            logging.info('Filtering by distance from pointing centre. All sources further than %.1f\" from phase centre will be removed' % radius)
             pointing_centres = SkyCoord(pointing_centre[0],pointing_centre[1],unit=('deg','deg'))
             truth_array = pointing_centres.separation(coords).to(u.arcmin).value < radius
             df = df[truth_array]
         if filter_exclusion_rad == 'True':
-            logging.info('Filtering by distance from phase centre via exclusion radius. All sources within %.1f\' of phase centre will be removed as these are within the exclusion radius' % exclusion_radius)
+            logging.info('Filtering by distance from pointing centre via exclusion radius. All sources within %.1f\" of phase centre will be removed as these are within the exclusion radius' % exclusion_radius)
             pointing_centres = SkyCoord(pointing_centre[0],pointing_centre[1],unit=('deg','deg'))
             truth_array_2 = pointing_centres.separation(coords).to(u.arcmin).value > exclusion_radius
             df = df[truth_array_2]
