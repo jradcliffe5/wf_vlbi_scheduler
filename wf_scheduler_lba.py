@@ -1,5 +1,5 @@
 ### Defaults
-import os, re, sys
+import os, sys
 ### Plotter
 import matplotlib.pyplot as plt
 ### Numerics
@@ -8,7 +8,7 @@ from datetime import datetime
 startTime = datetime.now()
 ### Table stuff
 from astropy.io import ascii
-from astropy.table import vstack,join
+from astropy.table import vstack
 import pandas as pd
 ### Coordinate stuff
 from astropy.coordinates import SkyCoord
