@@ -293,7 +293,7 @@ def convert_frac_to_float(frac_str):
 		frac = float(num) / float(denom)
 		return whole - frac if whole < 0 else whole + frac
 
-def write_correlation_params(table,prefix,correlator):
+def write_correlation_params(table,prefix,correlator,source_name):
 	'''
 	Function writes the correlation parameters in a $SOURCE vex format or v2d format so that
 	the correlator can read the phase centres in easily.
@@ -346,7 +346,7 @@ def write_correlation_params(table,prefix,correlator):
 				f.write("%s\n" % item)
 		f.close()
 	if correlator == 'difx':
-		correlation_string = ['SOURCE %s'%prefix,'{','doPointingCentre = True']
+		correlation_string = [f'SOURCE {source_name}','{','doPointingCentre = True']
 		for i in range(len(table['RA'])):
 			sig_fig = len(str(len(table['RA'])))
 			c = SkyCoord(table['RA'][i],table['DEC'][i],unit=('deg','deg'))

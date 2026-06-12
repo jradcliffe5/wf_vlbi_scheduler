@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 ### Defaults
 import os, sys
 ### Plotter
@@ -295,11 +296,11 @@ for i in range(len(targets)):
             logging.info('Complete... %s_correlation_params.csv has been written to the cwd' % prefix)
         if 'sfxc' in phase_centre_format:
             logging.info('Writing %d phase centres into VEX format'%len(df))
-            write_correlation_params(prefix=prefix,table=df,correlator='sfxc')
+            write_correlation_params(prefix=prefix,table=df,correlator='sfxc', source=source_name)
             logging.info('Complete... %s_correlation_params.vex has been written to the cwd' % prefix)
         if 'difx' in phase_centre_format:
             logging.info('Writing %d phase centres into V2D format'%len(df))
-            write_correlation_params(prefix=prefix+'_'+source_name,table=df,correlator='difx')
+            write_correlation_params(prefix=prefix+'_'+source_name,table=df,correlator='difx', source_name=source_name)
             logging.info('Complete... %s_correlation_params.v2d has been written to the cwd' % prefix)
     
 T = Table()
