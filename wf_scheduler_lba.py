@@ -189,13 +189,14 @@ for i in range(len(targets)):
             # expected_rms_from_vex divides by the primary-beam power for offset>0,
             # so comparing the (un-attenuated) source flux to nsigma*eff_rms is
             # equivalent to requiring PB-attenuated_flux > nsigma * central_rms.
-            eff_rms = expected_rms_from_vex(vexfile_name, frequency=freq, offset=offsets, source=targets[i])  # Jy/beam
+            eff_rms = expected_rms_from_vex(vexfile_name, frequency=freq, offset=offsets, source=targets[i],mk5clip=True)  # Jy/beam
             threshold = filter_by_pb_nsigma * eff_rms                                 # Jy/beam
             logging.info('Estimated central rms for %s: %.7f'%(targets[i],np.min(eff_rms)))
             flux_jy = (np.asarray(df[flux_column], dtype=float) * flux_unit).to(u.Jy).value
             df = df[flux_jy > threshold]
             logging.info('PB sensitivity filtered. Nphs reduced from %d to %d'
                      % (len(master_table[RA_column]), len(df[RA_column])))
+            coords = SkyCoord(df[RA_column], df[Dec_column], unit=('deg', 'deg'))
         fluxs = df[flux_column]
         if filter_distance == 'True':
             logging.info('Filtering by distance from pointing centre. All sources further than %.1f\" from phase centre will be removed' % radius)

@@ -611,21 +611,45 @@ def array_image_rms(sefds, bandwidth, t_int, eta=0.7, n_pol=2):
 	inv_var = np.sum(2.0 * bandwidth * t_int / (S[i_idx] * S[j_idx]))
 	return 1.0 / (eta * np.sqrt(n_pol * inv_var))
 
-def _vex_onsource_seconds(sched, source=None):
-	'''Total on-source time (s) summed over scans, optionally for one source.'''
+def _scan_onsource_seconds(scan):
+	'''On-source duration (s) of a single vex scan.'''
+	starts = [s['scan_sec_start'] for s in scan['scan'].values()]
+	ends = [s['scan_sec'] for s in scan['scan'].values()]
+	if starts and ends:
+		return max(ends) - min(starts)
+	return 0.0
+
+
+def _vex_onsource_seconds(sched, source=None, mk5clip=False,
+						  mk5clip_seconds=1800.0):
+	'''Total on-source time (s) summed over scans, optionally for one source.
+
+	With ``mk5clip`` True, a leading block of consecutive same-source scans at
+	the very start of the schedule is dropped if its cumulative on-source time
+	exceeds ``mk5clip_seconds`` (default 30 min). This removes the strong
+	fringe-finder / Mark5-clipped calibrator block that opens many schedules so
+	it does not contribute to a wide-field rms estimate.
+	'''
+	start = 0
+	if mk5clip and sched:
+		lead_source = sched[0].get('source')
+		block_end = 0
+		while block_end < len(sched) and sched[block_end].get('source') == lead_source:
+			block_end += 1
+		block_time = sum(_scan_onsource_seconds(s) for s in sched[:block_end])
+		if block_time > mk5clip_seconds:
+			start = block_end
+
 	total = 0.0
-	for scan in sched:
+	for scan in sched[start:]:
 		if source is not None and scan.get('source') != source:
 			continue
-		starts = [s['scan_sec_start'] for s in scan['scan'].values()]
-		ends = [s['scan_sec'] for s in scan['scan'].values()]
-		if starts and ends:
-			total += max(ends) - min(starts)
+		total += _scan_onsource_seconds(scan)
 	return total
 
 def expected_rms_from_vex(vexfile, bandwidth=None, source=None, t_int=None,
 						  frequency=None, offset=0.0, eta=0.7, n_pol=2,
-						  stations=None):
+						  stations=None, mk5clip=False):
 	'''Expected image thermal noise for the array in a vex schedule.
 
 	Pulls the participating stations and (optionally) on-source time from the
@@ -655,6 +679,13 @@ def expected_rms_from_vex(vexfile, bandwidth=None, source=None, t_int=None,
 	    Passed through to :func:`array_image_rms`.
 	stations : dict, optional
 	    Pre-loaded station table; defaults to :func:`load_stations`.
+	mk5clip : bool, optional
+	    If True (and ``t_int`` is summed from the schedule), drop the leading
+	    block of consecutive same-source scans at the very start of the
+	    schedule when its cumulative on-source time exceeds 30 min. This
+	    removes the strong fringe-finder / Mark5-clipped calibrator block that
+	    opens many schedules so it does not contribute to the wide-field rms.
+	    Default False.
 
 	Returns
 	-------
@@ -691,7 +722,7 @@ def expected_rms_from_vex(vexfile, bandwidth=None, source=None, t_int=None,
 	elif isinstance(frequency, u.Quantity):
 		frequency = frequency.to(u.Hz).value
 	if t_int is None:
-		t_int = _vex_onsource_seconds(v.sched, source)
+		t_int = _vex_onsource_seconds(v.sched, source, mk5clip=mk5clip)
 	if bandwidth is None:
 		bandwidth = getattr(v, 'total_bw_hz', None)
 		if bandwidth is None:
