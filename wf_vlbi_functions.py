@@ -570,6 +570,183 @@ def primary_beam_power_from_vex(offset, vexfile, frequency=None,
 
 	return primary_beam_power(offset, diameters, frequency, weights=W)
 
+def _lookup_diameters_weights(site_ids, frequency, stations, weight_by_sefd):
+	'''Map a list of station codes to dish diameters and (optional) SEFD weights.
+
+	Stations with no known diameter are dropped (with a warning). Returns
+	``(diameters, weights)`` where ``weights`` is either a list of SEFD-based
+	weights or None (uniform) when SEFD weighting is off or incomplete.
+	'''
+	diameters, weights, missing = [], [], []
+	for sid in site_ids:
+		entry = stations.get(sid.upper())
+		if entry is None or entry.get('diameter_m') is None:
+			missing.append(sid)
+			continue
+		diameters.append(entry['diameter_m'])
+		sefd = entry.get('sefd_jy') or {}
+		if sefd:
+			band = _freq_to_band_cm(frequency, sefd.keys())
+			weights.append(sefd[band])
+		else:
+			weights.append(None)
+
+	if missing:
+		logging.warning('No dish diameter for station(s): %s - excluded from the '
+						'primary beam' % ', '.join(missing))
+	if len(diameters) < 2:
+		raise ValueError('Need at least 2 stations with known diameters; '
+						 'found %d' % len(diameters))
+
+	if weight_by_sefd and all(w is not None for w in weights):
+		W = weights
+	else:
+		if weight_by_sefd:
+			logging.warning('Missing SEFD for some stations - using uniform weights')
+		W = None
+	return diameters, W
+
+def array_hpbw(diameters, frequency, weights=None, pb_coeff=1.0):
+	'''Estimated half-power beam width (FWHM) of the array primary power beam.
+
+	The "beam" here is the same normalised array power response evaluated by
+	:func:`primary_beam_power` (1.0 at the pointing centre). For a homogeneous
+	array this response is an exact Gaussian and the FWHM is returned
+	analytically; for a heterogeneous array (a weighted sum of Gaussians of
+	different widths) the half-power radius is found numerically by bisection.
+
+	Parameters
+	----------
+	diameters : float or array-like
+		Dish diameter(s) in metres (scalar = homogeneous array).
+	frequency : float or astropy Quantity
+		Observing frequency; plain numbers are Hz.
+	weights : array-like, optional
+		Per-antenna weights (e.g. SEFDs); only relative values matter. Ignored
+		for the homogeneous case. Defaults to equal weighting.
+	pb_coeff : float, optional
+		FWHM coefficient in FWHM = pb_coeff * lambda / D. Default 1.0.
+
+	Returns
+	-------
+	astropy.units.Quantity
+		Full width at half maximum of the array power beam, in arcmin.
+	'''
+	if isinstance(frequency, u.Quantity):
+		nu = frequency.to(u.Hz).value
+	else:
+		nu = float(frequency)
+
+	c = 2.99792458e8
+	lam = c / nu
+	D = np.atleast_1d(np.asarray(diameters, dtype=float))
+
+	# Homogeneous array: power beam = exp(-r^2 / sigma^2) (see primary_beam_power),
+	# so FWHM_power = (pb_coeff * lambda / D) / sqrt(2).
+	if D.size == 1:
+		fwhm_rad = pb_coeff * (lam / D[0]) / np.sqrt(2.0)
+		return (fwhm_rad * u.rad).to(u.arcmin)
+
+	# Heterogeneous array: bisect for the radius where the response drops to 0.5.
+	# Bracket using the widest single baseline as a generous upper bound.
+	fwhm_to_sigma = 1.0 / (2.0 * np.sqrt(2.0 * np.log(2.0)))
+	sigma = pb_coeff * (lam / D) * fwhm_to_sigma
+	hi = 2.0 * np.deg2rad(1.0) + 3.0 * sigma.max() * np.sqrt(2.0)
+	lo = 0.0
+	# primary_beam_power expects offsets in degrees when not a Quantity.
+	def resp(r_rad):
+		return primary_beam_power(r_rad * u.rad, diameters, frequency,
+								  weights=weights, pb_coeff=pb_coeff)
+	for _ in range(100):
+		mid = 0.5 * (lo + hi)
+		if resp(mid) > 0.5:
+			lo = mid
+		else:
+			hi = mid
+	r_hp = 0.5 * (lo + hi)
+	return (2.0 * r_hp * u.rad).to(u.arcmin)
+
+def primary_beam_power_from_stations(offset, stations_list, frequency,
+									 bandwidth=None, weight_by_sefd=True,
+									 stations=None, pb_coeff=1.0,
+									 return_hpbw=False):
+	'''Array primary-beam attenuation for an explicit list of stations.
+
+	Looks up each dish diameter (and SEFD) in the consolidated station table
+	(data/stations.json) and evaluates :func:`primary_beam_power`, optionally
+	with SEFD-weighted baselines. This is the vex-free counterpart to
+	:func:`primary_beam_power_from_vex`: give it the stations, frequency,
+	(optional) bandwidth and an offset, and it returns the attenuation.
+
+	Parameters
+	----------
+	offset : float, array-like or astropy Quantity
+		Angular distance from the pointing centre (plain numbers are degrees).
+	stations_list : str or sequence of str
+		Station codes, e.g. ``['EF', 'JB', 'WB']`` or a comma-separated string
+		``'EF,JB,WB'``. Case-insensitive; matched against data/stations.json.
+	frequency : float or astropy Quantity
+		Centre observing frequency; plain numbers are Hz.
+	bandwidth : float or astropy Quantity, optional
+		Total observing bandwidth; plain numbers are Hz. If given, the response
+		is averaged over the band (the beam narrows with frequency), sampling
+		11 points across [f - B/2, f + B/2]. If None (default) the response is
+		evaluated monochromatically at ``frequency``.
+	weight_by_sefd : bool
+		If True (default) weight baselines by 1/sqrt(SEFD_i SEFD_j); falls back
+		to uniform weighting if any station lacks an SEFD.
+	stations : dict, optional
+		Pre-loaded station table; defaults to :func:`load_stations`.
+	pb_coeff : float, optional
+		FWHM coefficient in FWHM = pb_coeff * lambda / D. Default 1.0.
+	return_hpbw : bool
+		If True, return ``(power, hpbw)`` where ``hpbw`` is the array half-power
+		beam width (astropy Quantity, arcmin) from :func:`array_hpbw` at the
+		centre frequency. Default False.
+
+	Returns
+	-------
+	float or numpy.ndarray
+		Normalised primary-beam power (same shape as ``offset``), in [0, 1].
+		If ``return_hpbw`` is True, a tuple ``(power, hpbw)``.
+	'''
+	if stations is None:
+		stations = load_stations()
+
+	if isinstance(stations_list, str):
+		site_ids = [s.strip() for s in stations_list.split(',') if s.strip()]
+	else:
+		site_ids = [str(s).strip() for s in stations_list]
+
+	if isinstance(frequency, u.Quantity):
+		frequency = frequency.to(u.Hz).value
+	else:
+		frequency = float(frequency)
+
+	diameters, W = _lookup_diameters_weights(site_ids, frequency, stations,
+											 weight_by_sefd)
+
+	if bandwidth is None:
+		power = primary_beam_power(offset, diameters, frequency, weights=W,
+								   pb_coeff=pb_coeff)
+	else:
+		if isinstance(bandwidth, u.Quantity):
+			bandwidth = bandwidth.to(u.Hz).value
+		else:
+			bandwidth = float(bandwidth)
+		freqs = np.linspace(frequency - bandwidth / 2.0,
+							frequency + bandwidth / 2.0, 11)
+		responses = [primary_beam_power(offset, diameters, f, weights=W,
+										pb_coeff=pb_coeff) for f in freqs]
+		power = np.mean(responses, axis=0)
+		if not np.ndim(offset):
+			power = float(power)
+
+	if return_hpbw:
+		hpbw = array_hpbw(diameters, frequency, weights=W, pb_coeff=pb_coeff)
+		return power, hpbw
+	return power
+
 # ------------------------------------------------------------------------------
 # Thermal (radiometer-equation) sensitivity
 # ------------------------------------------------------------------------------
