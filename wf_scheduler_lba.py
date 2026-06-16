@@ -93,6 +93,9 @@ logging.info('Fringe finder(s): %s', ', '.join(fringe_finders))
 logging.info('Phase reference(s): %s', ', '.join(phase_refs))
 logging.info('Target(s): %s', ', '.join(targets))
 
+sources = fringe_finders+phase_refs+targets
+
+
 
 ### now locate potential phase centers from RACs mid, EMU or VLASS
 source_names = []
@@ -102,9 +105,33 @@ survey = []
 number_phase_centers = []
 number_unfiltered_pc = []
 
-for i in range(len(targets)):
-    logging.info('Estimating the phase centres for source: %s'%targets[i])
-    source_name =targets[i]
+### select sources to use for phase center source by rms
+
+sources_use = []
+
+for i in range(len(sources)):
+    ra_center = Angle(vexfile.source[sources[i]]['ra']).degree
+    dec_center = Angle(vexfile.source[sources[i]]['dec']).degree
+    pointing_centre = [ra_center, dec_center]
+    pointing_centres = SkyCoord(pointing_centre[0], pointing_centre[1], unit=('deg', 'deg'))
+    eff_rms = expected_rms_from_vex(vexfile_name, frequency=freq, offset=0, source=sources[i])
+    print(eff_rms)
+    if eff_rms<0.0001:
+        sources_use.append(sources[i])
+
+print(sources_use)
+
+### now locate potential phase centers from RACs mid, EMU or VLASS
+source_names = []
+ras = []
+decs = []
+survey = []
+number_phase_centers = []
+number_unfiltered_pc = []
+
+for i in range(len(sources_use)):
+    logging.info('Estimating the phase centres for source: %s'%sources_use[i])
+    source_name =sources_use[i]
     source_names.append(source_name)
     ra_center = Angle(vexfile.source[source_name]['ra']).degree
     dec_center = Angle(vexfile.source[source_name]['dec']).degree
@@ -190,9 +217,9 @@ for i in range(len(targets)):
             # expected_rms_from_vex divides by the primary-beam power for offset>0,
             # so comparing the (un-attenuated) source flux to nsigma*eff_rms is
             # equivalent to requiring PB-attenuated_flux > nsigma * central_rms.
-            eff_rms = expected_rms_from_vex(vexfile_name, frequency=freq, offset=offsets, source=targets[i],mk5clip=True)  # Jy/beam
+            eff_rms = expected_rms_from_vex(vexfile_name, frequency=freq, offset=offsets, source=sources_use[i],mk5clip=True)  # Jy/beam
             threshold = filter_by_pb_nsigma * eff_rms                                 # Jy/beam
-            logging.info('Estimated central rms for %s: %.7f'%(targets[i],np.min(eff_rms)))
+            logging.info('Estimated central rms for %s: %.7f'%(sources_use[i],np.min(eff_rms)))
             flux_jy = (np.asarray(df[flux_column], dtype=float) * flux_unit).to(u.Jy).value
             df = df[flux_jy > threshold]
             logging.info('PB sensitivity filtered. Nphs reduced from %d to %d'
@@ -252,7 +279,9 @@ for i in range(len(targets)):
 
 
     if do_plots == 'True':
+        df = catalogue
         logging.info('Plotting phase centres')
+        print('dfra',df['RA'])
         centre_coords = [np.average(df['RA']),np.average(df['DEC'])]
         pixels = 5000.
         large_range = np.max([np.max(master_table['RA'])-np.min(master_table['RA']),np.max(master_table['DEC'])-np.min(master_table['DEC'])])*0.5
