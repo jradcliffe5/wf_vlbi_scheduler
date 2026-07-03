@@ -802,10 +802,10 @@ def _vex_onsource_seconds(sched, source=None, mk5clip=False,
 	'''Total on-source time (s) summed over scans, optionally for one source.
 
 	With ``mk5clip`` True, a leading block of consecutive same-source scans at
-	the very start of the schedule is dropped if its cumulative on-source time
-	exceeds ``mk5clip_seconds`` (default 30 min). This removes the strong
-	fringe-finder / Mark5-clipped calibrator block that opens many schedules so
-	it does not contribute to a wide-field rms estimate.
+    the very start of the schedule is reduced to just the last if its cumulative
+    on-source time exceeds ``mk5clip_seconds`` (default 30 min). This removes
+    the strong fringe-finder / Mark5-clipped calibrator block that opens many
+    schedules so it does not contribute to a wide-field rms estimate.
 	'''
 	start = 0
 	if mk5clip and sched:
@@ -815,7 +815,7 @@ def _vex_onsource_seconds(sched, source=None, mk5clip=False,
 			block_end += 1
 		block_time = sum(_scan_onsource_seconds(s) for s in sched[:block_end])
 		if block_time > mk5clip_seconds:
-			start = block_end
+			start = block_end - 1
 
 	total = 0.0
 	for scan in sched[start:]:
