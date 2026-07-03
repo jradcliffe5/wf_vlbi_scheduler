@@ -321,6 +321,11 @@ for source_name in sources_use:
     number_phase_centers.append(len(df))
     number_unfiltered_pc.append(len(master_table))
 
+    # jump ship if no phase centres (plotter doesn't like it).
+    if len(df) == 0:
+        logging.warning(f'{source_name} returned no phase centres!')
+        continue
+
     if do_plots:
         logging.info('Plotting phase centres')
         #centre_coords = [np.average(df['RA']),np.average(df['DEC'])]
@@ -386,6 +391,7 @@ for source_name in sources_use:
         ax.coords[0].set_axislabel('Right Ascension (J2000)')
         ax.coords[1].set_axislabel('Declination (J2000)')
         #fig.savefig('%s/%s_correlation_plot.pdf'%(os.getcwd(),prefix),bbox_inches='tight')
+        ax.set_title(f'{source_name}, {surv}')
         fig.savefig(
                 '{}_{}_correlation_plot.pdf'.format(prefix,source_name),
                 bbox_inches='tight')
