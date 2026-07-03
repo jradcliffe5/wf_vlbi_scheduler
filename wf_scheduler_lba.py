@@ -135,7 +135,7 @@ if vexfile is not None:
     logging.info('All Source(s): %s', ', '.join(sources_use))
 else:
     sources_use = ['pointing_centre']
-# get inputs from the input file if there is one, overriding default values where set
+# get inputs from the input file if there is one, overriding default values
 if inputfilename is not None:
     inputs = headless(inputfilename)
 set_inputs(inputs)
@@ -153,7 +153,7 @@ logging.info(f'prefix: {prefix}')
 if freq < 0.0:
     raise ValueError("The frequency is not set in input file or vex")
 
-#sources_use = sources
+# what catalogues are we using?
 df = {}
 master_table = {}
 if not args.lba:
@@ -163,6 +163,7 @@ if not args.lba:
     master_table = ascii.read(catalogue,format=cat_type)
 else:
     # read the LBA catalogues if requested
+    # will determine df and master_table for each source later
     cat_path = os.environ["WFCAT"]
     logging.info(f'Searching {cat_path} for LBA catalogues')
     lba_catalogues = get_lba_catalogues(cat_path)
@@ -200,7 +201,6 @@ for source_name in sources_use:
     master_table = copy.deepcopy(df)
     survey.append(surv)
 
-    filtered_coordinates=[]
     if filter_flat_flux:
         logging.info('Flux filtering. All sources above %.2e kept' % (filter_value))
         df = df[df[flux_column]>filter_value]
@@ -209,6 +209,7 @@ for source_name in sources_use:
 
     if filter_by_pb:
         #vexfile = str(inputs['vexfile'])
+        # WARNING: need a better way to determine the flux units for generic catalogues
         flux_unit = u.Unit(str(inputs.get('flux_unit', 'mJy')))
         logging.info('PB sensitivity filtering using %s. Removing sources whose '
                      'primary-beam-attenuated flux is below %.1f sigma'
@@ -242,7 +243,7 @@ for source_name in sources_use:
                 f' than {radius}\' from phase centre will be removed')
         pointing_centres = SkyCoord(
                 pointing_centre[0], pointing_centre[1], unit=('deg','deg'))
-        coords = SkyCoord(df[RA_column],df[Dec_column],unit=('deg','deg'))   ## Generate skycoord instance of fits file
+        coords = SkyCoord(df[RA_column], df[Dec_column], unit=('deg','deg'))   ## Generate skycoord instance of fits file
         truth_array = pointing_centres.separation(coords).to(u.arcmin).value < radius
         if MSSC_additions:
             logging.info('Adding in bright sources (above %.1f) in prior catalogue.' 
@@ -262,8 +263,8 @@ for source_name in sources_use:
                      ' as these are within the exclusion radius' 
                      % exclusion_radius)
         pointing_centres = SkyCoord(
-                pointing_centre[0],pointing_centre[1],unit=('deg','deg'))
-        coords = SkyCoord(df[RA_column],df[Dec_column],unit=('deg','deg'))
+                pointing_centre[0], pointing_centre[1], unit=('deg','deg'))
+        coords = SkyCoord(df[RA_column], df[Dec_column], unit=('deg','deg'))
         truth_array_3 = (pointing_centres.separation(coords).to(u.arcmin).value 
                          > exclusion_radius)
         df = df[truth_array_3]
@@ -274,28 +275,31 @@ for source_name in sources_use:
 
     if clip_phase_centres:
         if sortby == 'brightest':
-            df.sort(keys=flux_column,reverse=True)
+            df.sort(keys=flux_column, reverse=True)
             df2 = Table([df[RA_column],df[Dec_column]], names=('RA','DEC'))
             df = df[0:npc]
         elif sortby == 'nearest':
             pointing_centres = SkyCoord(
                     pointing_centre[0],pointing_centre[1],unit=('deg','deg'))
             coords = SkyCoord(
-                    df[RA_column],df[Dec_column],unit=('deg','deg'))
+                    df[RA_column], df[Dec_column], unit=('deg','deg'))
             df['separation'] = pointing_centres.separation(coords).to(u.arcmin).value
-            df.sort(keys='separation',reverse=False)
+            df.sort(keys='separation', reverse=False)
             df2 = Table([df[RA_column],df[Dec_column]], names=('RA','DEC'))
             df = df[0:npc]
 
+    filtered_coordinates=[]
     if filter_overlap:
         logging.info('Overlap filtering.'
                 ' Reducing number of phase centres if there are FoV overlaps')
-        coords = SkyCoord(df[RA_column],df[Dec_column],unit=('deg','deg'))
-        filtered_coordinates = filter_table(coords,phs_centre_fov) ## Filter the coordinates
+        coords = SkyCoord(df[RA_column], df[Dec_column], unit=('deg','deg'))
+        filtered_coordinates = filter_table(coords, phs_centre_fov) ## Filter the coordinates
+
     flux = df[flux_column]
-    coords = SkyCoord(df[RA_column],df[Dec_column],unit=('deg','deg'))
+    coords = SkyCoord(df[RA_column], df[Dec_column], unit=('deg','deg'))
     df = build_filtered_table(
-            coords,flux,filter=filter_overlap,filter_indices=filtered_coordinates)
+            coords, flux, filter=filter_overlap,
+            filter_indices=filtered_coordinates)
     #master_table.rename_columns([RA_column, Dec_column], ['RA','DEC'])
     #df['RA']  = np.round(df['RA'], 5)
     #df['DEC'] = np.round(df['DEC'], 5)
@@ -316,13 +320,11 @@ for source_name in sources_use:
 
     number_phase_centers.append(len(df))
     number_unfiltered_pc.append(len(master_table))
-    df.write(
-            '{}_{}_confirmed_phase_centers.csv'.format(source_name, surv),
-            format='csv', overwrite=True)
 
     if do_plots:
         logging.info('Plotting phase centres')
-        centre_coords = [np.average(df['RA']),np.average(df['DEC'])]
+        #centre_coords = [np.average(df['RA']),np.average(df['DEC'])]
+        centre_coords = [pointing_centre[0], pointing_centre[1]]
         #print(centre_coords)
         pixels = 5000.
         large_range = np.max(
@@ -331,9 +333,13 @@ for source_name in sources_use:
                  np.max(master_table[Dec_column]) 
                  - np.min(master_table[Dec_column])]) * 0.5
         w = generate_central_wcs(
-                centre_coords,[large_range/pixels,large_range/pixels],[0,0])
+                centre_coords, [large_range/pixels,large_range/pixels], [0,0])
         fig = plt.figure(figsize=(9,9))
         ax = fig.add_subplot(111, projection=w)
+        # mark the centre
+        ax.plot(
+                centre_coords[0], centre_coords[1], marker='+', color='red',
+                markersize=10, markeredgewidth=1, transform=ax.get_transform('world'))
         ax.scatter(
                 df['RA'], df['DEC'], c='k', marker='+',
                 transform=ax.get_transform('world'), s=20, 
@@ -366,9 +372,8 @@ for source_name in sources_use:
                 r = SphericalCircle(
                         (float(pointing_centre[0])*u.deg,
                         float(pointing_centre[1])*u.deg), 
-                        PB_fov/2. * u.degree,
-                        edgecolor=iter1, linestyle=iter2,
-                        facecolor='none',lw=2,
+                        PB_fov/2. * u.degree, edgecolor=iter1, linestyle=iter2,
+                        facecolor='none', lw=2,
                         transform=ax.get_transform('world'))
                 ax.add_patch(r)
                 custom_lines.append(Line2D([0], [0], color=iter1,ls=iter2, lw=4))
@@ -387,6 +392,16 @@ for source_name in sources_use:
         #plt.show()
     
     if output_correlation_list:
+        # first sort on distance - useful for correlator
+        pointing_centres = SkyCoord(
+                pointing_centre[0], pointing_centre[1], unit=('deg','deg'))
+        coords = SkyCoord(df['RA'], df['DEC'], unit=('deg','deg'))
+        df['separation'] = pointing_centres.separation(coords).to(u.arcmin).value
+        df.sort(keys='separation', reverse=False)
+
+        df.write(
+                '{}_{}_confirmed_phase_centers.csv'.format(source_name, surv),
+                format='csv', overwrite=True)
         if 'csv' in phase_centre_format:
             logging.info('Writing %d phase centres into CSV format'%len(df))
             outfile = '{}_{}_correlation_params.csv'.format(prefix,source_name)
@@ -417,4 +432,6 @@ T['dec'] = decs
 T['Survey'] = survey
 T['number_of_og_PC'] = number_unfiltered_pc
 T['number_phase_centers'] = number_phase_centers
-T.write('{}_number_of_phase_center_info.csv'.format(prefix),format='csv', overwrite=True)
+T.write(
+        '{}_number_of_phase_center_info.csv'.format(prefix), format='csv',
+        overwrite=True)
