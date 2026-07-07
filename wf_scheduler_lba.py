@@ -67,7 +67,7 @@ def set_inputs(inputs):
     pointing_centre = ast.literal_eval(inputs.get('pointing_centre', '[None,None]'))
     prefix = str(inputs.get('catalogue_prefix', 'test'))
     filter_distance = ast.literal_eval(inputs.get('filter_distance', 'False'))
-    radius = float(inputs.get('radius', 30)) # arcmin
+    radius = float(inputs.get('radius', 20)) # arcmin
     MSSC_value = float(inputs.get('MSSC_flux', 1000))
     MSSC_additions=ast.literal_eval(inputs.get('MSSC_additions', 'False'))
     npc = int(inputs.get('nphasecentres', 80))
@@ -122,15 +122,17 @@ if args.lba and (vexfile is None):
     parser.error('--lba requires a .vex file')
 
 # parse inputs
-sources_use = []
+sources_use = ()
+calibrators = set()
+targets = set()
 if vexfile is not None:
     # use default inputs that usually work well with vexfile only
     inputs = {}
     # extract the source info from the vex file
-    fringe_finders, phase_refs, targets = locate_sources(vexfile)
-    sources_use = list(set(fringe_finders+phase_refs+targets))
-    logging.info('Fringe finder(s): %s', ', '.join(fringe_finders))
-    logging.info('Phase reference(s): %s', ', '.join(phase_refs))
+    #fringe_finders, phase_refs, targets = locate_sources(vexfile)
+    targets, calibrators = locate_sources2(vexfile)
+    sources_use = calibrators.union(targets)
+    logging.info('Calibrator(s): %s', ', '.join(calibrators))
     logging.info('Target(s): %s', ', '.join(targets))
     logging.info('All Source(s): %s', ', '.join(sources_use))
 else:
@@ -353,7 +355,7 @@ for source_name in sources_use:
         ax.scatter(
                 master_table[RA_column], master_table[Dec_column],
                 transform=ax.get_transform('world'), s=2, 
-                label='Source positions')
+                label=f'Source positions \n ({radius} arcmin)')
         leg1 = ax.legend(loc='upper left', bbox_to_anchor=(1.01, 0.6))
         #ax.plot(df['RA'],df['DEC'],'-',transform=ax.get_transform('world'))
         #ax.set_xlim(pixels/-2.,pixels/2.)

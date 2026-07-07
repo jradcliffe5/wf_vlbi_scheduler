@@ -8,7 +8,7 @@ import numpy as np
 from astropy.table import Table
 from astropy import wcs
 from astropy.coordinates import SkyCoord
-from collections import defaultdict
+from collections import defaultdict, Counter
 
 def setup_logging_to_file(filename):
 	logging.basicConfig( filename='./'+filename,
@@ -983,3 +983,77 @@ def locate_sources(vexfile):
             Sources.append(sources[1])
 
     return fringe_finders, phase_refs, Sources
+
+def locate_sources2(vexfile):
+    '''Extract sources from vexfile and determine which are likely to be
+    targets, and which are calibrators. Sources with a large fraction of the
+    observing time are assumed to be either targets or phase references. For
+    sources that are paired in an apparent phase reference cycle, the source
+    with longer scans is assumed to be the target.
+
+    Parameters
+    -----------
+    vexfile: vexfile
+
+    Returns
+    --------
+    targets: set
+        a set of sources that look like science targets
+    calibrators: set
+        a set of sources that look like calibrators
+    '''
+
+    # will hold list of scanlens for each source
+    scanlens = defaultdict(list) 
+    # list of tuples of neighbouring scans
+    scan_pairs = []
+    # set of targets (not calibrators)
+    targets = set()
+
+    # run through the full list of scans extracting useful stuff
+    for i in range(len(vexfile.sched)):
+        #print (vexfile.sched[i])
+        # construct list of pairs of scans
+        src1 = vexfile.sched[i]['source']
+        if i < len(vexfile.sched)-1:
+            src2 = vexfile.sched[i+1]['source']
+            if (src1 != src2):
+                scan_pairs.append(tuple(sorted((src1, src2)))) 
+        scanlens[src1].append(vexfile.sched[i]['scan'][0]['scan_sec'])
+
+    # pair_counts will be approx the sum of adjacent scans for each pair
+    pair_counts = Counter(scan_pairs)
+    #print('pair_counts:', pair_counts)
+    #print('scan_pairs:', scan_pairs)
+
+    # Get the average obs time per source - calibrators will have less
+    #print([sum(x) for x in scanlens.values()])
+    typical_obstime = np.mean([sum(x) for x in scanlens.values()])
+    print('typical_obstime:', typical_obstime/3600.)
+    for source in scanlens.keys():
+        obstime = sum(scanlens[source])
+        #print('source, obstime (hrs):', source, obstime/3600.)
+        if obstime > 0.8*typical_obstime:
+            # sources with a lot of observing time likely to be targets.
+            targets.add(source)
+
+    # find 'target' pairs that account for more than half the scans on a source
+    # One of these will be a phase ref calibrator, the other a target
+    for pair in set(scan_pairs):
+        # need to test time on both sources in case one is dual purpose
+        nscans = min(len(scanlens[pair[0]]), len(scanlens[pair[1]]))
+        if (pair[0] in targets) or (pair[1] in targets):
+            if pair_counts[pair] > nscans:
+                #print('pair, pair_counts:', pair, pair_counts[pair])
+                #print('nscans:', nscans)
+                # phase ref pair, the one with longer scans is the target.
+                if np.median(scanlens[pair[0]]) < np.median(scanlens[pair[1]]):
+                    targets.discard(pair[0])
+                else:
+                    targets.discard(pair[1])
+
+    #print ('targets:', targets)
+    #print ('times:', [sum(scanlens[target]) for target in targets])
+    calibrators = set(scanlens.keys()) - targets
+
+    return targets, calibrators
