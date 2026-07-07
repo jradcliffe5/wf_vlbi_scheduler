@@ -384,12 +384,13 @@ for source_name in sources_use:
                         transform=ax.get_transform('world'))
                 ax.add_patch(r)
                 custom_lines.append(Line2D([0], [0], color=iter1,ls=iter2, lw=4))
-                handles.append(r'%s\,m'%j)
+                handles.append(r'$%s\,$m'%j)
         legend1 = ax.legend(
                 custom_lines, handles, loc='upper left', 
                 bbox_to_anchor=(1.01, 0.45),
-                title=r'\textbf{Primary beam}')
-        ax.add_artist(leg1)
+                title=r'Primary beam')
+        fig.add_artist(leg1)
+        #ax.add_artist(legend1)
         ax.coords[0].set_axislabel('Right Ascension (J2000)')
         ax.coords[1].set_axislabel('Declination (J2000)')
         #fig.savefig('%s/%s_correlation_plot.pdf'%(os.getcwd(),prefix),bbox_inches='tight')
