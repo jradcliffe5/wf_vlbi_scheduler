@@ -492,7 +492,7 @@
     }
   },
   "TI": {
-    "diameter_m": 70.0,
+    "diameter_m": null,
     "pb_model": "G",
     "sefd_jy": {
       "18": 23.0,
