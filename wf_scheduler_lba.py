@@ -269,7 +269,7 @@ for source_name in sources_use:
         truth_array_3 = (pointing_centres.separation(coords).to(u.arcmin).value 
                          > exclusion_radius)
         df = df[truth_array_3]
-        logging.info('Removed sources within exclusion radius and outside FoV.'
+        logging.info('Removed sources within exclusion radius.'
                 ' Nphs reduced from %d to %d' 
                 % (len(master_table[RA_column]),len(df[RA_column]))
                 )
