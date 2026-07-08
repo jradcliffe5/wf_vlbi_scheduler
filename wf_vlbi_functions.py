@@ -1029,7 +1029,7 @@ def locate_sources2(vexfile):
     # Get the average obs time per source - calibrators will have less
     #print([sum(x) for x in scanlens.values()])
     typical_obstime = np.mean([sum(x) for x in scanlens.values()])
-    print('typical_obstime:', typical_obstime/3600.)
+    #print('typical_obstime:', typical_obstime/3600.)
     for source in scanlens.keys():
         obstime = sum(scanlens[source])
         #print('source, obstime (hrs):', source, obstime/3600.)

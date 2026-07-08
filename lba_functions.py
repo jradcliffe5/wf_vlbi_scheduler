@@ -9,11 +9,17 @@ from pathlib import Path
 
 def get_lba_catalogues(cat_path):
     '''Find catalogues in the given path. Also set the CASDA url for later use.
+    Read catalogues in.
 
     Parameters
     -----------
     cat_path: str
         path to directory containing catalogues to be read in.
+
+    returns
+    -------
+    catalogues: dict
+        a dictionary of catalogues suitable for passing to select_lba_catalogue
     '''
 
     # Find all catalogues in the input directory

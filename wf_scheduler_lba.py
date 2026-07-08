@@ -35,7 +35,6 @@ from astropy.coordinates import SkyCoord
 from vex import Vex
 from astropy.coordinates import Angle
 from lba_functions import *
-import pprint
 
 
 def set_inputs(inputs):
@@ -60,7 +59,7 @@ def set_inputs(inputs):
     phs_centre_fov = convert_frac_to_float(inputs.get('phs_centre_fov', '58.24/60.'))
     filter_overlap= ast.literal_eval(inputs.get('filter_overlap', 'True'))
     do_plots= ast.literal_eval(inputs.get('do_plots', 'True'))
-    PB_plots = ast.literal_eval(inputs.get('PBs', '[12,22,64]'))
+    PB_plots = ast.literal_eval(inputs.get('PBs', '[64,22,12]'))
     freq = inputs.get('observing_frequency', -1)
     output_correlation_list = ast.literal_eval(inputs.get('write_correlation_list', 'True'))
     phase_centre_format = str(inputs.get('phase_centre_format', 'difx').split(','))
@@ -346,7 +345,8 @@ for source_name in sources_use:
         # mark the centre
         ax.plot(
                 centre_coords[0], centre_coords[1], marker='+', color='red',
-                markersize=10, markeredgewidth=1, transform=ax.get_transform('world'))
+                markersize=10, markeredgewidth=0.7,
+                transform=ax.get_transform('world'), label='Pointing Centre')
         ax.scatter(
                 df['RA'], df['DEC'], c='k', marker='+',
                 transform=ax.get_transform('world'), s=20, 
@@ -383,12 +383,13 @@ for source_name in sources_use:
                         facecolor='none', lw=2,
                         transform=ax.get_transform('world'))
                 ax.add_patch(r)
-                custom_lines.append(Line2D([0], [0], color=iter1,ls=iter2, lw=4))
+                custom_lines.append(
+                        Line2D([0], [0], color=iter1, ls=iter2, lw=4))
                 handles.append(r'$%s\,$m'%j)
         legend1 = ax.legend(
                 custom_lines, handles, loc='upper left', 
                 bbox_to_anchor=(1.01, 0.45),
-                title=r'Primary beam')
+                title=r'$\bf{Primary\ beam}$')
         fig.add_artist(leg1)
         #ax.add_artist(legend1)
         ax.coords[0].set_axislabel('Right Ascension (J2000)')
@@ -401,7 +402,7 @@ for source_name in sources_use:
         #plt.show()
     
     if output_correlation_list:
-        # first sort on distance - useful for correlator
+        # first sort on distance from phase centre - useful for correlator
         pointing_centres = SkyCoord(
                 pointing_centre[0], pointing_centre[1], unit=('deg','deg'))
         coords = SkyCoord(df['RA'], df['DEC'], unit=('deg','deg'))
@@ -409,7 +410,7 @@ for source_name in sources_use:
         df.sort(keys='separation', reverse=False)
 
         df.write(
-                '{}_{}_confirmed_phase_centers.csv'.format(source_name, surv),
+                '{}_{}_{}_confirmed_phase_centers.csv'.format(prefix, source_name, surv),
                 format='csv', overwrite=True)
         if 'csv' in phase_centre_format:
             logging.info('Writing %d phase centres into CSV format'%len(df))
@@ -423,15 +424,17 @@ for source_name in sources_use:
             write_correlation_params(
                     prefix=prefix+'_'+source_name, table=df, correlator='sfxc',
                     source=source_name)
-            logging.info('Complete... %s_%s_correlation_params.vex has been written to the cwd' 
-                         % (source_name, prefix))
+            logging.info(
+                    'Complete... %s_%s_correlation_params.vex has been written to the cwd' 
+                     % (source_name, prefix))
         if 'difx' in phase_centre_format:
             logging.info('Writing %d phase centres into V2D format'%len(df))
             write_correlation_params(
                     prefix=prefix+'_'+source_name, table=df, correlator='difx',
                     source_name=source_name)
-            logging.info('Complete... %s_%s_correlation_params.v2d has been written to the cwd' 
-                         % (source_name, prefix))
+            logging.info(
+                    'Complete... %s_%s_correlation_params.v2d has been written to the cwd' 
+                     % (source_name, prefix))
 
 logging.info('All sources done!')
 T = Table()
