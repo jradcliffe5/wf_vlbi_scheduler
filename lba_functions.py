@@ -88,6 +88,7 @@ def select_lba_catalogue(source_name, lba_catalogues, radius, pointing_centre):
     catalogue = None
     surv = None
     keep_cols = []
+    center = SkyCoord(ra_center*u.deg, dec_center*u.deg)
     #print(lba_catalogues.keys())
     if 'racs' in lba_catalogues.keys():
         casda_url = lba_catalogues['racs']
@@ -104,7 +105,6 @@ def select_lba_catalogue(source_name, lba_catalogues, radius, pointing_centre):
             surv = 'RACS'
     if 'emu' in lba_catalogues.keys():
         emu_cat = lba_catalogues['emu']
-        center = SkyCoord(ra_center*u.deg, dec_center*u.deg)
         emu_coords = SkyCoord(
                 ra=emu_cat['ra_deg_cont'], dec=emu_cat['dec_deg_cont'])
         sep = emu_coords.separation(center)

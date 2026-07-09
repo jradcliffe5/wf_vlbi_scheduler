@@ -293,7 +293,8 @@ def convert_frac_to_float(frac_str):
 		frac = float(num) / float(denom)
 		return whole - frac if whole < 0 else whole + frac
 
-def write_correlation_params(table,prefix,correlator,source_name):
+def write_correlation_params(
+        table, prefix, correlator, source_name, dopointing='True'):
 	'''
 	Function writes the correlation parameters in a $SOURCE vex format or v2d format so that
 	the correlator can read the phase centres in easily.
@@ -346,7 +347,7 @@ def write_correlation_params(table,prefix,correlator,source_name):
 				f.write("%s\n" % item)
 		f.close()
 	if correlator == 'difx':
-		correlation_string = [f'SOURCE {source_name}','{','doPointingCentre = True']
+		correlation_string = [f'SOURCE {source_name}','{',f'doPointingCentre = {dopointing}']
 		for i in range(len(table['RA'])):
 			sig_fig = len(str(len(table['RA'])))
 			c = SkyCoord(table['RA'][i],table['DEC'][i],unit=('deg','deg'))
@@ -1033,7 +1034,7 @@ def locate_sources2(vexfile):
     for source in scanlens.keys():
         obstime = sum(scanlens[source])
         #print('source, obstime (hrs):', source, obstime/3600.)
-        if obstime > 0.8*typical_obstime:
+        if obstime > 0.6*typical_obstime:
             # sources with a lot of observing time likely to be targets.
             targets.add(source)
 
@@ -1042,7 +1043,7 @@ def locate_sources2(vexfile):
     for pair in set(scan_pairs):
         # need to test time on both sources in case one is dual purpose
         nscans = min(len(scanlens[pair[0]]), len(scanlens[pair[1]]))
-        if (pair[0] in targets) or (pair[1] in targets):
+        if (pair[0] in targets) and (pair[1] in targets):
             if pair_counts[pair] > nscans:
                 #print('pair, pair_counts:', pair, pair_counts[pair])
                 #print('nscans:', nscans)

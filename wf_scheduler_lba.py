@@ -50,12 +50,12 @@ def set_inputs(inputs):
     catalogue = str(inputs.get('catalogue', ""))
     cat_type = str(inputs.get('table_format', 'csv'))
     RA_column = str(inputs.get('RA_column', "RA"))
-    Dec_column = str(inputs.get('Dec_column', "Dec"))
+    Dec_column = str(inputs.get('Dec_column', "DEC"))
+    flux_column = str(inputs.get('flux_column', 'Total_flux'))
     filter_flat_flux = ast.literal_eval(inputs.get('filter_flat_flux', 'False'))
     filter_by_pb = ast.literal_eval(inputs.get('filter_by_pb', 'True'))
     filter_by_pb_nsigma = float(inputs.get('filter_by_pb_nsigma', 5.0))
     filter_value = float(inputs.get('filter_value', 0.5))
-    flux_column = str(inputs.get('flux_column', 'total_flux'))
     phs_centre_fov = convert_frac_to_float(inputs.get('phs_centre_fov', '58.24/60.'))
     filter_overlap= ast.literal_eval(inputs.get('filter_overlap', 'True'))
     do_plots= ast.literal_eval(inputs.get('do_plots', 'True'))
@@ -65,7 +65,7 @@ def set_inputs(inputs):
     phase_centre_format = str(inputs.get('phase_centre_format', 'difx').split(','))
     pointing_centre = ast.literal_eval(inputs.get('pointing_centre', '[None,None]'))
     prefix = str(inputs.get('catalogue_prefix', 'test'))
-    filter_distance = ast.literal_eval(inputs.get('filter_distance', 'False'))
+    filter_distance = ast.literal_eval(inputs.get('filter_distance', 'True'))
     radius = float(inputs.get('radius', 20)) # arcmin
     MSSC_value = float(inputs.get('MSSC_flux', 1000))
     MSSC_additions=ast.literal_eval(inputs.get('MSSC_additions', 'False'))
@@ -159,8 +159,6 @@ df = {}
 master_table = {}
 if not args.lba:
     # source and catalogue come from the input file
-    df = ascii.read(catalogue,format=cat_type)
-    #logging.info(df.info())
     master_table = ascii.read(catalogue,format=cat_type)
 else:
     # read the LBA catalogues if requested
@@ -168,6 +166,8 @@ else:
     cat_path = os.environ["WFCAT"]
     logging.info(f'Searching {cat_path} for LBA catalogues')
     lba_catalogues = get_lba_catalogues(cat_path)
+    # set LBA preferences
+    filter_distance = False
 
 logging.info('Source(s) to use: %s', ', '.join(sources_use))
 
@@ -191,19 +191,40 @@ for source_name in sources_use:
     ras.append(ra_center)
     decs.append(dec_center)
 
-    surv = catalogue
+    surv = os.path.basename(catalogue)
     if args.lba:
         # search LBA catalogues for best option
-        df, RA_column, Dec_column, flux_column, surv = select_lba_catalogue(
+        master_table, RA_column, Dec_column, flux_column, surv = select_lba_catalogue(
                 source_name, lba_catalogues, radius, pointing_centre)
         logging.info(
                 f'Chosen LBA catalogue: {surv}, {RA_column}, {Dec_column}, {flux_column}')
-    #df = catalogue
-    master_table = copy.deepcopy(df)
+    df = copy.deepcopy(master_table)
     survey.append(surv)
 
+    if filter_distance:
+        logging.info(
+                f'Filtering by distance from phase centre. All sources further'
+                f' than {radius}\' from phase centre will be removed')
+        pointing_centres = SkyCoord(
+                pointing_centre[0], pointing_centre[1], unit=('deg','deg'))
+        coords = SkyCoord(df[RA_column], df[Dec_column], unit=('deg','deg'))   ## Generate skycoord instance of fits file
+        truth_array = pointing_centres.separation(coords).to(u.arcmin).value < radius
+        if MSSC_additions:
+            logging.info('Adding in bright sources (above %.1f) in prior catalogue.' 
+                         % MSSC_value)
+            truth_array_2 = (
+                    pointing_centres.separation(coords).to(u.arcmin).value >
+                    radius) & (df[flux_column]>MSSC_value
+                    )
+            truth_array[truth_array_2==True]=True
+        df = df[truth_array]
+        logging.info('Distance filtered. Nphs reduced from %d to %d' 
+                     % (len(master_table[RA_column]),len(df[RA_column])))
+
+
     if filter_flat_flux:
-        logging.info('Flux filtering. All sources above %.2e kept' % (filter_value))
+        logging.info(
+                'Flux filtering. All sources above %.2e kept' % (filter_value))
         df = df[df[flux_column]>filter_value]
         logging.info('Flux filtered. Nphs reduced from %d to %d' 
                      % (len(master_table[RA_column]),len(df[RA_column])))
@@ -237,26 +258,6 @@ for source_name in sources_use:
         #logging.info(f'Faintest 10 fluxes: {printvals}')
         with np.printoptions(suppress=True, precision=3):
             logging.info(f'Faintest 10 fluxes (mJy): {np.array(sorted(df[flux_column])[0:10])}')
-
-    if filter_distance:
-        logging.info(
-                f'Filtering by distance from phase centre. All sources further'
-                f' than {radius}\' from phase centre will be removed')
-        pointing_centres = SkyCoord(
-                pointing_centre[0], pointing_centre[1], unit=('deg','deg'))
-        coords = SkyCoord(df[RA_column], df[Dec_column], unit=('deg','deg'))   ## Generate skycoord instance of fits file
-        truth_array = pointing_centres.separation(coords).to(u.arcmin).value < radius
-        if MSSC_additions:
-            logging.info('Adding in bright sources (above %.1f) in prior catalogue.' 
-                         % MSSC_value)
-            truth_array_2 = (
-                    pointing_centres.separation(coords).to(u.arcmin).value >
-                    radius) & (df[flux_column]>MSSC_value
-                    )
-            truth_array[truth_array_2==True]=True
-        df = df[truth_array]
-        logging.info('Distance filtered. Nphs reduced from %d to %d' 
-                     % (len(master_table[RA_column]),len(df[RA_column])))
 
     if exclusion_radius > 0 and source_name in targets:
         logging.info('Filtering by distance from pointing centre via exclusion radius.'
@@ -429,9 +430,12 @@ for source_name in sources_use:
                      % (source_name, prefix))
         if 'difx' in phase_centre_format:
             logging.info('Writing %d phase centres into V2D format'%len(df))
+            dopointing = 'False'
+            #if source_name in targets:
+            #    dopointing = 'False'
             write_correlation_params(
                     prefix=prefix+'_'+source_name, table=df, correlator='difx',
-                    source_name=source_name)
+                    source_name=source_name, dopointing=dopointing)
             logging.info(
                     'Complete... %s_%s_correlation_params.v2d has been written to the cwd' 
                      % (source_name, prefix))
