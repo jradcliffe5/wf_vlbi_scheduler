@@ -12,6 +12,7 @@ startTime = datetime.now()
 ### Table stuff
 from astropy.io import ascii
 from astropy.table import vstack
+from astropy.table import Table
 import pandas as pd
 ### Coordinate stuff
 from astropy.coordinates import SkyCoord
@@ -159,7 +160,10 @@ df = {}
 master_table = {}
 if not args.lba:
     # source and catalogue come from the input file
-    master_table = ascii.read(catalogue,format=cat_type)
+    if re.search(r'fits$', os.path.basename(catalogue), re.IGNORECASE):
+        master_table = Table.read(catalogue)
+    else:
+        master_table = ascii.read(catalogue, format=cat_type)
 else:
     # read the LBA catalogues if requested
     # will determine df and master_table for each source later
@@ -221,6 +225,8 @@ for source_name in sources_use:
         logging.info('Distance filtered. Nphs reduced from %d to %d' 
                      % (len(master_table[RA_column]),len(df[RA_column])))
 
+    # save sources at this point for plotting purposes only
+    plot_table = copy.deepcopy(df)
 
     if filter_flat_flux:
         logging.info(
@@ -335,10 +341,10 @@ for source_name in sources_use:
         #print(centre_coords)
         pixels = 5000.
         large_range = np.max(
-                [np.max(master_table[RA_column]) 
-                 - np.min(master_table[RA_column]),
-                 np.max(master_table[Dec_column]) 
-                 - np.min(master_table[Dec_column])]) * 0.5
+                [np.max(plot_table[RA_column]) 
+                 - np.min(plot_table[RA_column]),
+                 np.max(plot_table[Dec_column]) 
+                 - np.min(plot_table[Dec_column])]) * 0.5
         w = generate_central_wcs(
                 centre_coords, [large_range/pixels,large_range/pixels], [0,0])
         fig = plt.figure(figsize=(9,9))
@@ -354,7 +360,7 @@ for source_name in sources_use:
                 label='Phase centres')
         #print(df['RA'],df['DEC'])
         ax.scatter(
-                master_table[RA_column], master_table[Dec_column],
+                plot_table[RA_column], plot_table[Dec_column],
                 transform=ax.get_transform('world'), s=2, 
                 label=f'Source positions \n ({radius} arcmin)')
         leg1 = ax.legend(loc='upper left', bbox_to_anchor=(1.01, 0.6))
