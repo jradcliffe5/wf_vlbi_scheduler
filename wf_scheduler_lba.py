@@ -350,6 +350,7 @@ for source_name in sources_use:
                 centre_coords, [large_range/pixels,large_range/pixels], [0,0])
         fig = plt.figure(figsize=(9,9))
         ax = fig.add_subplot(111, projection=w)
+        ax.invert_xaxis()
         # mark the centre
         ax.plot(
                 centre_coords[0], centre_coords[1], marker='+', color='red',
