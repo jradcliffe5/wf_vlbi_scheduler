@@ -79,8 +79,9 @@ def set_inputs(inputs):
 parser = argparse.ArgumentParser(
         description="Compare Vex file and catalogues and"
         " select phase centres for widefield correlation.")
-parser.add_argument("filenames", type=str, nargs='+',
-                    help="'Input' file, or .vex file")
+parser.add_argument(
+        "filenames", type=str, nargs='+',
+        help="'Input' file and/or .vex file")
 parser.add_argument(
         '--lba', '-l',
         dest='lba', action='store_true',
