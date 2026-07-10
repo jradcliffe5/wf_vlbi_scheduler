@@ -1012,28 +1012,29 @@ def locate_sources2(vexfile):
     targets = set()
 
     # run through the full list of scans extracting useful stuff
+    fringe_block = True
     for i in range(len(vexfile.sched)):
-        #print (vexfile.sched[i])
         # construct list of pairs of scans
         src1 = vexfile.sched[i]['source']
         if i < len(vexfile.sched)-1:
             src2 = vexfile.sched[i+1]['source']
+            if (src1 == src2) and fringe_block:
+                # skip consecutive scans of same source at the beginning as
+                # these are probably fringe finder setup scans that won't be
+                # correlated
+                continue
+            fringe_block = False
             if (src1 != src2):
                 scan_pairs.append(tuple(sorted((src1, src2)))) 
         scanlens[src1].append(vexfile.sched[i]['scan'][0]['scan_sec'])
 
     # pair_counts will be approx the sum of adjacent scans for each pair
     pair_counts = Counter(scan_pairs)
-    #print('pair_counts:', pair_counts)
-    #print('scan_pairs:', scan_pairs)
 
     # Get the average obs time per source - calibrators will have less
-    #print([sum(x) for x in scanlens.values()])
     typical_obstime = np.mean([sum(x) for x in scanlens.values()])
-    #print('typical_obstime:', typical_obstime/3600.)
     for source in scanlens.keys():
         obstime = sum(scanlens[source])
-        #print('source, obstime (hrs):', source, obstime/3600.)
         if obstime > 0.6*typical_obstime:
             # sources with a lot of observing time likely to be targets.
             targets.add(source)
@@ -1045,16 +1046,11 @@ def locate_sources2(vexfile):
         nscans = min(len(scanlens[pair[0]]), len(scanlens[pair[1]]))
         if (pair[0] in targets) and (pair[1] in targets):
             if pair_counts[pair] > nscans:
-                #print('pair, pair_counts:', pair, pair_counts[pair])
-                #print('nscans:', nscans)
-                # phase ref pair, the one with longer scans is the target.
                 if np.median(scanlens[pair[0]]) < np.median(scanlens[pair[1]]):
                     targets.discard(pair[0])
                 else:
                     targets.discard(pair[1])
 
-    #print ('targets:', targets)
-    #print ('times:', [sum(scanlens[target]) for target in targets])
     calibrators = set(scanlens.keys()) - targets
 
     return targets, calibrators
