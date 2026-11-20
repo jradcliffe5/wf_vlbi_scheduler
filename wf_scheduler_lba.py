@@ -408,6 +408,7 @@ for source_name in sources_use:
         fig.savefig(
                 '{}_{}_correlation_plot.pdf'.format(prefix,source_name),
                 bbox_inches='tight')
+        plt.close(fig)
         #plt.show()
     
     if output_correlation_list:
